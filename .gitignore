@@ -1,0 +1,80 @@
+# Dependencies
+**/node_modules/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.sample
+
+# Keys, certificates, and credentials
+*.pem
+*.key
+*.crt
+*.cer
+*.pfx
+*.p12
+*.jks
+*.keystore
+*.asc
+*.kdbx
+*secret*.json
+*credentials*.json
+*service-account*.json
+firebase-adminsdk*.json
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build and coverage output
+**/dist/
+**/build/
+**/coverage/
+**/.next/
+**/.nuxt/
+**/.svelte-kit/
+**/.turbo/
+**/.cache/
+**/.parcel-cache/
+vite.svg
+*.tsbuildinfo
+
+# Runtime and temp files
+*.pid
+*.seed
+*.pid.lock
+tmp/
+temp/
+.tmp/
+*.tmp
+
+# Local databases and dumps
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.sql
+*.dump
+
+# Editor and OS files
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

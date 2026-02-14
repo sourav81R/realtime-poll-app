@@ -1,0 +1,133 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap");
+
+:root {
+  --bg-top: #ecfeff;
+  --bg-bottom: #f8fafc;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --line-soft: rgba(15, 23, 42, 0.1);
+  --panel-bg: rgba(255, 255, 255, 0.78);
+  --brand-main: #0f766e;
+  --brand-alt: #0ea5a4;
+  --accent: #ea580c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: var(--text-main);
+  background:
+    radial-gradient(1000px 500px at 0% -10%, rgba(20, 184, 166, 0.25), transparent 55%),
+    radial-gradient(900px 440px at 100% 0%, rgba(234, 88, 12, 0.18), transparent 52%),
+    linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+}
+
+.display-font {
+  font-family: "Space Grotesk", sans-serif;
+}
+
+.app-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.ambient-orb {
+  position: absolute;
+  z-index: -1;
+  border-radius: 9999px;
+  filter: blur(38px);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.ambient-orb-a {
+  top: 72px;
+  left: -120px;
+  width: 320px;
+  height: 320px;
+  background: rgba(20, 184, 166, 0.35);
+}
+
+.ambient-orb-b {
+  top: 22px;
+  right: -120px;
+  width: 360px;
+  height: 360px;
+  background: rgba(251, 146, 60, 0.3);
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.glass-panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--line-soft);
+  box-shadow: 0 12px 40px rgba(2, 132, 199, 0.09);
+}
+
+.card-lift {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 42px rgba(15, 118, 110, 0.15);
+  border-color: rgba(15, 118, 110, 0.25);
+}
+
+.brand-gradient-text {
+  background: linear-gradient(90deg, var(--brand-main), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.btn-accent {
+  background: linear-gradient(135deg, var(--brand-main), var(--brand-alt));
+  color: #fff;
+}
+
+.btn-accent:hover {
+  filter: brightness(1.04);
+}
+
+.btn-soft {
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--brand-main);
+}
+
+.btn-soft:hover {
+  background: rgba(240, 253, 250, 0.9);
+}
+
+.rise-in {
+  animation: riseIn 360ms ease both;
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-lift,
+  .rise-in {
+    animation: none;
+    transition: none;
+  }
+}
