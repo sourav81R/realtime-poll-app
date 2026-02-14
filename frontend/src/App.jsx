@@ -68,9 +68,11 @@ function Layout({ children, user, onLogout }) {
           <div className="px-4 sm:px-5 lg:px-6">
             <div className="hidden md:grid grid-cols-[minmax(0,1fr)_auto] items-center h-16 gap-6">
             <Link to="/" className="flex items-center gap-3 min-w-0 justify-self-start">
-              <div className="h-9 w-9 rounded-xl bg-slate-900 text-white font-bold text-sm flex items-center justify-center shadow-sm">
-                P
-              </div>
+              <img
+                src="/favicon.ico"
+                alt="PollRoom logo"
+                className="h-9 w-9 rounded-xl object-cover shadow-sm"
+              />
               <span className="display-font text-2xl font-bold tracking-tight text-slate-900 leading-none">
                 PollRoom
               </span>
@@ -120,9 +122,11 @@ function Layout({ children, user, onLogout }) {
             <div className="md:hidden py-3">
               <div className="flex items-center justify-between gap-3">
                 <Link to="/" className="flex items-center gap-2 min-w-0">
-                  <div className="h-8 w-8 rounded-lg bg-slate-900 text-white font-bold text-xs flex items-center justify-center shadow-sm">
-                    P
-                  </div>
+                  <img
+                    src="/favicon.ico"
+                    alt="PollRoom logo"
+                    className="h-8 w-8 rounded-lg object-cover shadow-sm"
+                  />
                   <span className="display-font text-xl font-bold tracking-tight text-slate-900">
                     PollRoom
                   </span>

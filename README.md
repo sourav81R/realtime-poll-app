@@ -1,0 +1,150 @@
+# PollRoom - Real-Time Polling App
+
+PollRoom is a full-stack real-time polling application where users can create polls, vote, change/revoke votes, and see live updates.
+
+## Tech Stack
+
+- Frontend: React + Vite + Tailwind CSS
+- Backend: Node.js + Express + MongoDB + Mongoose
+- Auth: JWT + Google OAuth (optional)
+- Realtime: Socket.IO
+
+## Project Structure
+
+```text
+realtime-poll-app/
+|-- backend/
+|   |-- config/
+|   |-- middleware/
+|   |-- models/
+|   |-- routes/
+|   |-- server.js
+|-- frontend/
+|   |-- src/
+|   |-- index.html
+|   |-- vite.config.js
+|-- README.md
+```
+
+## Features
+
+- User registration/login with JWT
+- Optional Google OAuth login
+- Create polls with multiple options
+- Vote on polls (single active vote per poll per user)
+- Change vote or revoke vote
+- Poll feed with latest polls
+- Profile dashboard for created/voted polls
+- Real-time result updates with Socket.IO
+- Responsive UI for desktop/mobile
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18+ (recommended)
+- MongoDB running locally or a MongoDB URI
+
+### 1. Clone and install dependencies
+
+```bash
+git clone <your-repo-url>
+cd realtime-poll-app
+
+cd backend
+npm install
+
+cd ../frontend
+npm install
+```
+
+### 2. Backend environment variables
+
+Create `backend/.env`:
+
+```env
+PORT=5000
+MONGODB_URI=mongodb://127.0.0.1:27017/pollroom
+JWT_SECRET=your_jwt_secret_here
+CLIENT_URL=http://localhost:5173
+
+# Optional (for Google OAuth)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_CALLBACK_URL=http://localhost:5000/auth/google/callback
+```
+
+### 3. Frontend API URL
+
+The frontend currently uses hardcoded backend URLs in:
+
+- `frontend/src/socket.js`
+- `frontend/src/api/axios.js`
+
+Default is `http://localhost:5000`.
+
+## Run Locally
+
+Use two terminals.
+
+### Terminal 1 - backend
+
+```bash
+cd backend
+npm run dev
+```
+
+### Terminal 2 - frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+Frontend: `http://localhost:5173`  
+Backend: `http://localhost:5000`
+
+## API Overview
+
+- `POST /api/auth/register` - register user
+- `POST /api/auth/login` - login user
+- `GET /api/auth/google` - start Google OAuth
+- `GET /api/polls` - poll feed (optional auth for personalized vote state)
+- `POST /api/polls` - create poll (auth required)
+- `GET /api/polls/:id` - get poll details
+- `POST /api/polls/:id/vote` - vote/change/revoke vote (auth required)
+- `GET /api/polls/me/dashboard` - profile dashboard (auth required)
+
+## Notes
+
+### 1) Fairness / Anti-Abuse Mechanisms (2)
+
+1. One active vote per user per poll:
+   Voting requires auth, and server logic checks existing vote by `{ pollId, userId }`. A user can switch option or revoke (same option click), but cannot stack multiple active votes on one poll.
+2. Poll creation rate limiting:
+   `express-rate-limit` is applied on `POST /api/polls` with a limit of 10 create requests per IP per 15 minutes.
+
+### 2) Edge Cases Handled
+
+- Invalid poll IDs return `400` instead of crashing.
+- Invalid/missing option indices are validated.
+- Poll-not-found returns `404`.
+- Revoke vote flow is supported by selecting the same option again.
+- Vote decrements are clamped with `Math.max(0, ...)` to avoid negative counts.
+- Feed/profile pages handle loading, error, and empty states.
+- Non-auth users trying protected actions get guided to login/signup UI.
+- Create-poll intent is preserved in session storage and auto-launches after login.
+- Web Share fallback copies invite text to clipboard when native share is unavailable.
+
+### 3) Known Limitations / Next Improvements
+
+- No DB-level unique index on `Vote` for `(pollId, userId)`; add a compound unique index to harden against race conditions.
+- Rate limiting is only on poll creation; voting/auth endpoints can also be protected.
+- Frontend/backend base URLs are hardcoded in source; move to environment-based config.
+- CORS is currently open (`origin: "*"`) and should be restricted for production.
+- No automated tests yet (unit/integration/e2e).
+- Poll lifecycle controls (close poll, end time, delete/edit poll) are not implemented.
+
+## Credits
+
+Built and maintained by Sourav Chowdhury.
