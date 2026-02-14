@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const PollSchema = new mongoose.Schema({
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
   question: {
     type: String,
     required: true

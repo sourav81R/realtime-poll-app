@@ -121,6 +121,15 @@ html,
   animation: riseIn 360ms ease both;
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 @keyframes riseIn {
   from {
     opacity: 0;

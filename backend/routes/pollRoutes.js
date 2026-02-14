@@ -62,6 +62,7 @@ router.post("/", auth, createPollLimiter, async (req, res) => {
     }
 
     const poll = new Poll({
+      createdBy: req.user.id,
       question,
       options: options.map((opt) => ({ text: opt, votes: 0 })),
     });
@@ -137,6 +138,57 @@ router.post("/:id/vote", auth, async (req, res) => {
     return res.json(pollData);
   } catch (err) {
     console.error("Error submitting vote:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Profile dashboard: polls created by user + polls voted by user
+router.get("/me/dashboard", auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const createdPolls = await Poll.find({ createdBy: userId })
+      .select("-voters")
+      .sort({ createdAt: -1 });
+
+    const userVotes = await Vote.find({ userId })
+      .select("pollId optionIndex createdAt")
+      .sort({ createdAt: -1 });
+
+    const voteMap = new Map();
+    for (const vote of userVotes) {
+      const key = String(vote.pollId);
+      if (!voteMap.has(key)) {
+        voteMap.set(key, {
+          optionIndex: vote.optionIndex,
+          votedAt: vote.createdAt,
+        });
+      }
+    }
+
+    const votedPollIds = [...voteMap.keys()];
+    const votedPollDocs =
+      votedPollIds.length > 0
+        ? await Poll.find({ _id: { $in: votedPollIds } }).select("-voters")
+        : [];
+
+    const votedPolls = votedPollDocs
+      .map((poll) => {
+        const voteInfo = voteMap.get(String(poll._id));
+        return {
+          ...poll.toObject(),
+          currentUserVote: voteInfo ? voteInfo.optionIndex : null,
+          votedAt: voteInfo ? voteInfo.votedAt : null,
+        };
+      })
+      .sort((a, b) => new Date(b.votedAt || 0) - new Date(a.votedAt || 0));
+
+    return res.json({
+      createdPolls,
+      votedPolls,
+    });
+  } catch (err) {
+    console.error("Error loading profile dashboard:", err);
     return res.status(500).json({ message: "Server error" });
   }
 });
