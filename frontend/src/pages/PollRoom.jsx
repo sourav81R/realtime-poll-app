@@ -1,15 +1,39 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { socket, BACKEND_URL } from "../socket";
 
 export default function PollRoom() {
   const { id: pollId } = useParams();
+  const location = useLocation();
   const [poll, setPoll] = useState(null);
   const [hasVoted, setHasVoted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [activeTab, setActiveTab] = useState("vote");
+  const [toastMessage, setToastMessage] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const toastCode = params.get("toast");
+
+    if (toastCode === "auto_launch_success") {
+      setToastMessage("Poll launched successfully after login.");
+    } else if (toastCode === "launch_success") {
+      setToastMessage("Poll launched successfully.");
+    } else {
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      setToastMessage("");
+    }, 3000);
+
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, "", cleanUrl);
+
+    return () => clearTimeout(timeout);
+  }, [location.search]);
 
   useEffect(() => {
     const voted = localStorage.getItem(`voted_${pollId}`);
@@ -63,18 +87,21 @@ export default function PollRoom() {
   };
 
   const handleShare = async () => {
+    const shareMessage = `Take a look at this poll and cast your vote: "${poll?.question}"`;
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Poll Room",
+          title: "Take a look at this poll",
+          text: shareMessage,
           url: window.location.href,
         });
       } catch (err) {
         console.error("Error sharing:", err);
       }
     } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert("Link copied to clipboard.");
+      const shareContent = `${shareMessage}\n${window.location.href}`;
+      navigator.clipboard.writeText(shareContent);
+      alert("Poll invite text copied to clipboard.");
     }
   };
 
@@ -118,22 +145,27 @@ export default function PollRoom() {
   const totalVotes = poll.options.reduce((acc, curr) => acc + curr.votes, 0);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 sm:py-14">
-      <div className="glass-panel rounded-3xl shadow-2xl border p-6 sm:p-10">
+    <div className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-14">
+      {toastMessage && (
+        <div className="fixed top-16 sm:top-20 left-3 right-3 sm:left-auto sm:right-4 z-50 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 shadow-lg">
+          {toastMessage}
+        </div>
+      )}
+      <div className="glass-panel rounded-2xl sm:rounded-3xl shadow-2xl border p-4 sm:p-10">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8 border-b border-slate-200 pb-6">
-          <h1 className="display-font text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">
+          <h1 className="display-font text-xl sm:text-3xl font-bold text-slate-900 leading-tight break-words">
             {poll.question}
           </h1>
-          <div className="flex gap-2 shrink-0">
+          <div className="flex flex-wrap gap-2 shrink-0 w-full sm:w-auto">
             <button
               onClick={handleDownloadPDF}
-              className="btn-soft inline-flex items-center px-4 py-2 text-sm font-semibold rounded-xl transition-colors"
+              className="btn-soft inline-flex items-center justify-center px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors w-full sm:w-auto"
             >
               Download PDF
             </button>
             <button
               onClick={handleShare}
-              className="btn-soft inline-flex items-center px-4 py-2 text-sm font-semibold rounded-xl transition-colors"
+              className="btn-soft inline-flex items-center justify-center px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors w-full sm:w-auto"
             >
               Share Link
             </button>
@@ -187,9 +219,9 @@ export default function PollRoom() {
                     />
                   )}
 
-                  <div className="relative z-10 p-4 flex justify-between items-center gap-3">
+                  <div className="relative z-10 p-3 sm:p-4 flex justify-between items-center gap-2 sm:gap-3">
                     <span
-                      className={`font-semibold text-lg ${
+                      className={`font-semibold text-base sm:text-lg ${
                         hasVoted
                           ? "text-slate-800"
                           : "text-slate-700 group-hover:text-teal-700"
@@ -198,11 +230,11 @@ export default function PollRoom() {
                       {opt.text}
                     </span>
                     {hasVoted && (
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm text-slate-600 font-medium">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <span className="text-xs sm:text-sm text-slate-600 font-medium whitespace-nowrap">
                           {opt.votes} votes
                         </span>
-                        <span className="font-bold text-teal-800 bg-white/70 px-2 py-1 rounded-md min-w-[3rem] text-center">
+                        <span className="font-bold text-teal-800 bg-white/70 px-2 py-1 rounded-md min-w-[2.6rem] sm:min-w-[3rem] text-center text-xs sm:text-sm">
                           {percentage}%
                         </span>
                       </div>
@@ -214,14 +246,14 @@ export default function PollRoom() {
           </div>
         ) : (
           <div className="pt-4 pb-2">
-            <div className="h-64 flex items-end justify-between gap-2 sm:gap-4 px-2">
+            <div className="h-56 sm:h-64 flex items-end justify-between gap-2 sm:gap-4 px-1 sm:px-2 overflow-x-auto">
               {poll.options.map((opt, idx) => {
                 const percentage =
                   totalVotes === 0 ? 0 : Math.round((opt.votes / totalVotes) * 100);
                 return (
                   <div
                     key={idx}
-                    className="flex flex-col items-center justify-end h-full flex-1"
+                    className="flex flex-col items-center justify-end h-full min-w-[54px] sm:min-w-0 flex-1"
                   >
                     <div className="relative w-full max-w-[60px] flex flex-col justify-end h-full">
                       <div className="text-xs text-slate-500 text-center mb-1 absolute -top-6 left-0 right-0">
@@ -251,7 +283,7 @@ export default function PollRoom() {
           </div>
         )}
 
-        <div className="mt-8 pt-6 border-t border-slate-200 flex justify-between items-center text-sm text-slate-600">
+        <div className="mt-8 pt-6 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-sm text-slate-600">
           <p>
             Total votes:{" "}
             <span className="font-bold text-slate-900">{totalVotes}</span>

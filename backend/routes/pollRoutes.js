@@ -3,9 +3,10 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Poll = mongoose.model('Poll');
 const createPollLimiter = require('../middleware/rateLimiter');
+const auth = require("../middleware/auth");
 
 // Create a new poll
-router.post('/', createPollLimiter, async (req, res) => {
+router.post('/', auth, createPollLimiter, async (req, res) => {
   try {
     const { question, options } = req.body;
     

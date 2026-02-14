@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { BACKEND_URL } from "../socket";
 
+const PENDING_POLL_SHOULD_LAUNCH_KEY = "pending_poll_should_launch";
+
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
@@ -67,7 +69,7 @@ function EyeClosedIcon() {
   );
 }
 
-export default function Register() {
+export default function Register({ onLogin }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -87,7 +89,17 @@ export default function Register() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Registration failed");
 
-      navigate("/login");
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("username", data.username);
+      localStorage.setItem("name", data.name || data.username?.split("@")[0] || "User");
+      onLogin({
+        username: data.username,
+        name: data.name || data.username?.split("@")[0] || "User",
+      });
+
+      const goToCreate =
+        sessionStorage.getItem(PENDING_POLL_SHOULD_LAUNCH_KEY) === "1";
+      navigate(goToCreate ? "/create" : "/");
     } catch (err) {
       setError(
         err.message === "Failed to fetch"
@@ -102,11 +114,12 @@ export default function Register() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 sm:p-8 glass-panel rounded-3xl shadow-xl border border-slate-200">
+    <div className="max-w-md mx-auto mt-6 sm:mt-10 px-3 sm:px-0">
+      <div className="p-5 sm:p-8 glass-panel rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200">
       <p className="text-xs uppercase tracking-[0.2em] text-teal-700 font-semibold text-center">
         New Account
       </p>
-      <h2 className="display-font text-3xl font-bold mb-6 text-center text-slate-900">
+      <h2 className="display-font text-2xl sm:text-3xl font-bold mb-6 text-center text-slate-900">
         Register
       </h2>
       {error && (
@@ -160,7 +173,7 @@ export default function Register() {
         </div>
         <button
           type="submit"
-          className="btn-accent w-full py-3 rounded-xl font-bold shadow-lg"
+          className="btn-accent w-full py-3 rounded-xl text-sm sm:text-base font-bold shadow-lg"
         >
           Register
         </button>
@@ -173,7 +186,7 @@ export default function Register() {
       <button
         type="button"
         onClick={handleGoogleSignup}
-        className="w-full inline-flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 py-3 rounded-xl hover:bg-teal-50 hover:border-teal-300 transition font-semibold"
+        className="w-full inline-flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 py-3 rounded-xl hover:bg-teal-50 hover:border-teal-300 transition text-sm sm:text-base font-semibold"
       >
         <GoogleIcon />
         Signup with Google
@@ -184,6 +197,7 @@ export default function Register() {
           Login
         </Link>
       </p>
+    </div>
     </div>
   );
 }

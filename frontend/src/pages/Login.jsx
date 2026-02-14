@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { BACKEND_URL } from "../socket";
 
+const PENDING_POLL_SHOULD_LAUNCH_KEY = "pending_poll_should_launch";
+
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
@@ -87,7 +89,9 @@ export default function Login({ onLogin }) {
       localStorage.setItem("username", username);
       localStorage.setItem("name", name || username.split("@")[0] || "User");
       onLogin({ username, name: name || username.split("@")[0] || "User" });
-      navigate("/", { replace: true });
+      const goToCreate =
+        sessionStorage.getItem(PENDING_POLL_SHOULD_LAUNCH_KEY) === "1";
+      navigate(goToCreate ? "/create" : "/", { replace: true });
       return;
     }
 
@@ -115,7 +119,9 @@ export default function Login({ onLogin }) {
         username: data.username,
         name: data.name || data.username?.split("@")[0] || "User",
       });
-      navigate("/");
+      const goToCreate =
+        sessionStorage.getItem(PENDING_POLL_SHOULD_LAUNCH_KEY) === "1";
+      navigate(goToCreate ? "/create" : "/");
     } catch (err) {
       setError(
         err.message === "Failed to fetch"
@@ -126,11 +132,12 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 sm:p-8 glass-panel rounded-3xl shadow-xl border border-slate-200">
+    <div className="max-w-md mx-auto mt-6 sm:mt-10 px-3 sm:px-0">
+      <div className="p-5 sm:p-8 glass-panel rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200">
       <p className="text-xs uppercase tracking-[0.2em] text-teal-700 font-semibold text-center">
         Welcome Back
       </p>
-      <h2 className="display-font text-3xl font-bold mb-6 text-center text-slate-900">
+      <h2 className="display-font text-2xl sm:text-3xl font-bold mb-6 text-center text-slate-900">
         Login
       </h2>
       {error && (
@@ -173,7 +180,7 @@ export default function Login({ onLogin }) {
         </div>
         <button
           type="submit"
-          className="btn-accent w-full py-3 rounded-xl font-bold shadow-lg"
+          className="btn-accent w-full py-3 rounded-xl text-sm sm:text-base font-bold shadow-lg"
         >
           Login
         </button>
@@ -185,7 +192,7 @@ export default function Login({ onLogin }) {
       </div>
       <a
         href={`${BACKEND_URL}/api/auth/google`}
-        className="w-full inline-flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 py-3 rounded-xl hover:bg-teal-50 hover:border-teal-300 transition font-semibold"
+        className="w-full inline-flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 py-3 rounded-xl hover:bg-teal-50 hover:border-teal-300 transition text-sm sm:text-base font-semibold"
       >
         <GoogleIcon />
         Continue with Google
@@ -196,6 +203,7 @@ export default function Login({ onLogin }) {
           Register
         </Link>
       </p>
+    </div>
     </div>
   );
 }

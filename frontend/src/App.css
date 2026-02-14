@@ -131,3 +131,41 @@ body {
     transition: none;
   }
 }
+
+@media (max-width: 1024px) {
+  .ambient-orb-a {
+    width: 250px;
+    height: 250px;
+    left: -90px;
+  }
+
+  .ambient-orb-b {
+    width: 280px;
+    height: 280px;
+    right: -90px;
+  }
+}
+
+@media (max-width: 640px) {
+  .ambient-orb {
+    opacity: 0.28;
+  }
+
+  .ambient-orb-a {
+    width: 180px;
+    height: 180px;
+    top: 76px;
+    left: -75px;
+  }
+
+  .ambient-orb-b {
+    width: 200px;
+    height: 200px;
+    top: 42px;
+    right: -80px;
+  }
+
+  .glass-panel {
+    border-radius: 1.1rem;
+  }
+}
