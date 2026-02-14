@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { socket, BACKEND_URL } from "../socket";
 
 export default function PollRoom() {
   const { id: pollId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [poll, setPoll] = useState(null);
-  const [hasVoted, setHasVoted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [activeTab, setActiveTab] = useState("vote");
   const [toastMessage, setToastMessage] = useState("");
+  const [currentUserVote, setCurrentUserVote] = useState(null);
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -36,54 +38,76 @@ export default function PollRoom() {
   }, [location.search]);
 
   useEffect(() => {
-    const voted = localStorage.getItem(`voted_${pollId}`);
-    if (voted) setHasVoted(true);
-
-    fetch(`${BACKEND_URL}/api/polls/${pollId}`)
-      .then((res) => {
+    const loadPoll = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${BACKEND_URL}/api/polls/${pollId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         if (!res.ok) throw new Error("Poll not found");
-        return res.json();
-      })
-      .then((data) => {
+        const data = await res.json();
         setPoll(data);
-        setLoading(false);
-      })
-      .catch((err) => {
+        setCurrentUserVote(
+          typeof data.currentUserVote === "number" ? data.currentUserVote : null
+        );
+      } catch (err) {
         setError(err.message);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
 
+    loadPoll();
     socket.emit("join_poll", pollId);
 
     const handleUpdate = (updatedPoll) => {
-      setPoll(updatedPoll);
-    };
-
-    const handleError = (msg) => {
-      alert(msg);
+      setPoll((prev) => {
+        if (!prev) return updatedPoll;
+        return { ...prev, ...updatedPoll };
+      });
     };
 
     const onConnect = () => setIsConnected(true);
     const onDisconnect = () => setIsConnected(false);
 
     socket.on("update_poll", handleUpdate);
-    socket.on("error", handleError);
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
 
     return () => {
       socket.off("update_poll", handleUpdate);
-      socket.off("error", handleError);
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
     };
   }, [pollId]);
 
-  const handleVote = (index) => {
-    if (hasVoted) return;
-    socket.emit("vote", { pollId, optionIndex: index });
-    setHasVoted(true);
-    localStorage.setItem(`voted_${pollId}`, "true");
+  const handleVote = async (optionIndex) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setShowAuthPopup(true);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/polls/${pollId}/vote`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ optionIndex }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Vote failed");
+
+      setPoll((prev) => (prev ? { ...prev, ...data } : data));
+      setCurrentUserVote(
+        typeof data.currentUserVote === "number" ? data.currentUserVote : null
+      );
+    } catch (err) {
+      alert(err.message || "Vote failed");
+    }
   };
 
   const handleShare = async () => {
@@ -143,6 +167,7 @@ export default function PollRoom() {
   if (!poll) return null;
 
   const totalVotes = poll.options.reduce((acc, curr) => acc + curr.votes, 0);
+  const hasVote = typeof currentUserVote === "number";
 
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-14">
@@ -151,6 +176,7 @@ export default function PollRoom() {
           {toastMessage}
         </div>
       )}
+
       <div className="glass-panel rounded-2xl sm:rounded-3xl shadow-2xl border p-4 sm:p-10">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8 border-b border-slate-200 pb-6">
           <h1 className="display-font text-xl sm:text-3xl font-bold text-slate-900 leading-tight break-words">
@@ -200,49 +226,50 @@ export default function PollRoom() {
             {poll.options.map((opt, idx) => {
               const percentage =
                 totalVotes === 0 ? 0 : Math.round((opt.votes / totalVotes) * 100);
+              const isActive = currentUserVote === idx;
 
               return (
                 <button
                   key={idx}
                   onClick={() => handleVote(idx)}
-                  disabled={hasVoted}
                   className={`relative w-full overflow-hidden rounded-xl border-2 text-left transition-all duration-200 ${
-                    hasVoted
-                      ? "border-transparent bg-slate-50 cursor-default"
-                      : "border-slate-200 hover:border-teal-500 hover:shadow-md bg-white"
+                    isActive
+                      ? "border-teal-500 bg-teal-50"
+                      : "border-slate-200 hover:border-teal-400 hover:shadow-md bg-white"
                   }`}
                 >
-                  {hasVoted && (
-                    <div
-                      className="absolute top-0 left-0 h-full bg-teal-100 transition-all duration-700 ease-out"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  )}
+                  <div
+                    className="absolute top-0 left-0 h-full bg-teal-100/70 transition-all duration-700 ease-out"
+                    style={{ width: `${percentage}%` }}
+                  />
 
                   <div className="relative z-10 p-3 sm:p-4 flex justify-between items-center gap-2 sm:gap-3">
-                    <span
-                      className={`font-semibold text-base sm:text-lg ${
-                        hasVoted
-                          ? "text-slate-800"
-                          : "text-slate-700 group-hover:text-teal-700"
-                      }`}
-                    >
+                    <span className="font-semibold text-base sm:text-lg text-slate-800">
                       {opt.text}
+                      {isActive ? (
+                        <span className="ml-2 text-xs sm:text-sm font-bold text-teal-700">
+                          (Your vote)
+                        </span>
+                      ) : null}
                     </span>
-                    {hasVoted && (
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <span className="text-xs sm:text-sm text-slate-600 font-medium whitespace-nowrap">
-                          {opt.votes} votes
-                        </span>
-                        <span className="font-bold text-teal-800 bg-white/70 px-2 py-1 rounded-md min-w-[2.6rem] sm:min-w-[3rem] text-center text-xs sm:text-sm">
-                          {percentage}%
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <span className="text-xs sm:text-sm text-slate-600 font-medium whitespace-nowrap">
+                        {opt.votes} votes
+                      </span>
+                      <span className="font-bold text-teal-800 bg-white/70 px-2 py-1 rounded-md min-w-[2.6rem] sm:min-w-[3rem] text-center text-xs sm:text-sm">
+                        {percentage}%
+                      </span>
+                    </div>
                   </div>
                 </button>
               );
             })}
+
+            <p className="text-xs sm:text-sm text-slate-600">
+              {hasVote
+                ? "You can change your vote by selecting another option, or revoke by selecting your current option again."
+                : "Login/signup to vote. You can keep only one active vote at a time."}
+            </p>
           </div>
         ) : (
           <div className="pt-4 pb-2">
@@ -285,8 +312,7 @@ export default function PollRoom() {
 
         <div className="mt-8 pt-6 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-sm text-slate-600">
           <p>
-            Total votes:{" "}
-            <span className="font-bold text-slate-900">{totalVotes}</span>
+            Total votes: <span className="font-bold text-slate-900">{totalVotes}</span>
           </p>
           <p
             className={`flex items-center font-semibold ${
@@ -302,6 +328,42 @@ export default function PollRoom() {
           </p>
         </div>
       </div>
+
+      {showAuthPopup && (
+        <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-[2px] flex items-center justify-center z-50 p-4">
+          <div className="glass-panel rounded-2xl p-5 sm:p-6 w-full max-w-md">
+            <h3 className="display-font text-lg sm:text-xl font-bold text-slate-900">
+              Login or Signup Required
+            </h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Please login or signup first to vote in this poll.
+            </p>
+            <div className="mt-5 flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={() => navigate("/login")}
+                className="btn-accent flex-1 rounded-xl py-2.5 font-semibold"
+              >
+                Login
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/register")}
+                className="btn-soft flex-1 rounded-xl py-2.5 font-semibold"
+              >
+                Signup
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAuthPopup(false)}
+              className="w-full mt-3 text-sm text-slate-500 hover:text-slate-700"
+            >
+              Maybe later
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

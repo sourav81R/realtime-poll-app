@@ -21,10 +21,17 @@ body {
   min-height: 100vh;
   font-family: "Plus Jakarta Sans", sans-serif;
   color: var(--text-main);
+  overflow-x: hidden;
   background:
     radial-gradient(1000px 500px at 0% -10%, rgba(20, 184, 166, 0.25), transparent 55%),
     radial-gradient(900px 440px at 100% 0%, rgba(234, 88, 12, 0.18), transparent 52%),
     linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+}
+
+html,
+#root {
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .display-font {
@@ -34,6 +41,7 @@ body {
 .app-shell {
   position: relative;
   isolation: isolate;
+  overflow-x: hidden;
 }
 
 .ambient-orb {
