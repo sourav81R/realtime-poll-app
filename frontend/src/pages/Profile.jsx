@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BACKEND_URL } from "../socket";
+import { apiFetch } from "../api/http";
 
 function buildNameFromUsername(username) {
   if (!username) return "User";
@@ -68,11 +68,9 @@ export default function Profile({ user, onLogout }) {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`${BACKEND_URL}/api/polls/me/dashboard`, {
+        const data = await apiFetch("/api/polls/me/dashboard", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to load profile");
         setCreatedPolls(Array.isArray(data.createdPolls) ? data.createdPolls : []);
         setVotedPolls(Array.isArray(data.votedPolls) ? data.votedPolls : []);
       } catch (err) {

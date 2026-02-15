@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BACKEND_URL } from "../socket";
+import { apiFetch } from "../api/http";
 
 function totalVotes(options) {
   return options.reduce((sum, option) => sum + option.votes, 0);
@@ -19,11 +19,9 @@ export default function Home() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${BACKEND_URL}/api/polls`, {
+      const data = await apiFetch("/api/polls", {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to load feed");
       setPolls(Array.isArray(data) ? data : []);
     } catch (err) {
       setFeedError(err.message || "Failed to load feed");
@@ -44,7 +42,7 @@ export default function Home() {
     }
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/polls/${pollId}/vote`, {
+      const data = await apiFetch(`/api/polls/${pollId}/vote`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -52,8 +50,6 @@ export default function Home() {
         },
         body: JSON.stringify({ optionIndex }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Vote failed");
 
       setPolls((prev) =>
         prev.map((poll) =>

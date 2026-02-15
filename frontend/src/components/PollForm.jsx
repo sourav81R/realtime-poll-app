@@ -23,7 +23,7 @@ export default function PollForm() {
         options,
       });
 
-      setLink(`http://localhost:5173/poll/${res.data._id}`);
+      setLink(`${window.location.origin}/poll/${res.data._id}`);
     } catch (err) {
       alert(err.response?.data?.message || "Error");
     }

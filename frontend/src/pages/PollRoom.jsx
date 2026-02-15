@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { socket, BACKEND_URL } from "../socket";
+import { apiFetch } from "../api/http";
+import { isBackendConfigured, socket } from "../socket";
 
 export default function PollRoom() {
   const { id: pollId } = useParams();
@@ -38,26 +39,39 @@ export default function PollRoom() {
   }, [location.search]);
 
   useEffect(() => {
+    let active = true;
+
     const loadPoll = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${BACKEND_URL}/api/polls/${pollId}`, {
+        const data = await apiFetch(`/api/polls/${pollId}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
-        if (!res.ok) throw new Error("Poll not found");
-        const data = await res.json();
+        if (!active) return;
         setPoll(data);
         setCurrentUserVote(
           typeof data.currentUserVote === "number" ? data.currentUserVote : null
         );
       } catch (err) {
+        if (!active) return;
         setError(err.message);
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
     loadPoll();
+
+    if (!isBackendConfigured) {
+      setIsConnected(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    socket.connect();
     socket.emit("join_poll", pollId);
 
     const handleUpdate = (updatedPoll) => {
@@ -75,9 +89,11 @@ export default function PollRoom() {
     socket.on("disconnect", onDisconnect);
 
     return () => {
+      active = false;
       socket.off("update_poll", handleUpdate);
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
+      socket.disconnect();
     };
   }, [pollId]);
 
@@ -89,7 +105,7 @@ export default function PollRoom() {
     }
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/polls/${pollId}/vote`, {
+      const data = await apiFetch(`/api/polls/${pollId}/vote`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -97,9 +113,6 @@ export default function PollRoom() {
         },
         body: JSON.stringify({ optionIndex }),
       });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Vote failed");
 
       setPoll((prev) => (prev ? { ...prev, ...data } : data));
       setCurrentUserVote(

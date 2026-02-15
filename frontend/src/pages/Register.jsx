@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { BACKEND_URL } from "../socket";
+import { apiFetch } from "../api/http";
+import { buildBackendUrl } from "../socket";
 
 const PENDING_POLL_SHOULD_LAUNCH_KEY = "pending_poll_should_launch";
 
@@ -81,13 +82,11 @@ export default function Register({ onLogin }) {
     e.preventDefault();
     setError("");
     try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
+      const data = await apiFetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Registration failed");
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("username", data.username);
@@ -110,7 +109,11 @@ export default function Register({ onLogin }) {
   };
 
   const handleGoogleSignup = () => {
-    window.location.href = `${BACKEND_URL}/api/auth/google`;
+    try {
+      window.location.href = buildBackendUrl("/api/auth/google");
+    } catch (err) {
+      setError(err.message || "Google signup is unavailable.");
+    }
   };
 
   return (

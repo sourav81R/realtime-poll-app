@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { BACKEND_URL } from "../socket";
+import { apiFetch } from "../api/http";
+import { buildBackendUrl } from "../socket";
 
 const PENDING_POLL_SHOULD_LAUNCH_KEY = "pending_poll_should_launch";
 
@@ -76,14 +77,13 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+  const oauthError = new URLSearchParams(location.search).get("error");
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const token = params.get("token");
     const username = params.get("username");
     const name = params.get("name");
-    const oauthError = params.get("error");
-
     if (token && username) {
       localStorage.setItem("token", token);
       localStorage.setItem("username", username);
@@ -94,23 +94,20 @@ export default function Login({ onLogin }) {
       navigate(goToCreate ? "/create" : "/", { replace: true });
       return;
     }
-
-    if (oauthError) {
-      setError("Google login failed. Please try again.");
-    }
   }, [location.search, navigate, onLogin]);
+
+  const displayError =
+    error || (oauthError ? "Google login failed. Please try again." : "");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      const data = await apiFetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Login failed");
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("username", data.username);
@@ -131,6 +128,14 @@ export default function Login({ onLogin }) {
     }
   };
 
+  const handleGoogleLogin = () => {
+    try {
+      window.location.href = buildBackendUrl("/api/auth/google");
+    } catch (err) {
+      setError(err.message || "Google login is unavailable.");
+    }
+  };
+
   return (
     <div className="max-w-md mx-auto mt-6 sm:mt-10 px-3 sm:px-0">
       <div className="p-5 sm:p-8 glass-panel rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200">
@@ -140,9 +145,9 @@ export default function Login({ onLogin }) {
       <h2 className="display-font text-2xl sm:text-3xl font-bold mb-6 text-center text-slate-900">
         Login
       </h2>
-      {error && (
+      {displayError && (
         <div className="bg-red-50 text-red-700 border border-red-200 p-3 rounded-xl mb-4 text-sm">
-          {error}
+          {displayError}
         </div>
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -190,13 +195,14 @@ export default function Login({ onLogin }) {
         <span className="px-3 text-xs text-slate-400 font-semibold">OR</span>
         <div className="h-px bg-slate-200 flex-1" />
       </div>
-      <a
-        href={`${BACKEND_URL}/api/auth/google`}
+      <button
+        type="button"
+        onClick={handleGoogleLogin}
         className="w-full inline-flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 py-3 rounded-xl hover:bg-teal-50 hover:border-teal-300 transition text-sm sm:text-base font-semibold"
       >
         <GoogleIcon />
         Continue with Google
-      </a>
+      </button>
       <p className="mt-4 text-center text-sm text-slate-600">
         Don't have an account?{" "}
         <Link to="/register" className="text-teal-700 font-semibold hover:underline">

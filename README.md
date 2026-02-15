@@ -83,6 +83,7 @@ VITE_BACKEND_URL=http://localhost:5000
 ```
 
 For production (Vercel), set `VITE_BACKEND_URL` to your deployed backend URL in project environment variables.
+The frontend requires this variable in production and will not fallback to the Vercel frontend domain.
 
 ## Run Locally
 

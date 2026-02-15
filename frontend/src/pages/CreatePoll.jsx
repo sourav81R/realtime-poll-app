@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BACKEND_URL } from "../socket";
+import { apiFetch } from "../api/http";
 
 const PENDING_POLL_PAYLOAD_KEY = "pending_poll_payload";
 const PENDING_POLL_SHOULD_LAUNCH_KEY = "pending_poll_should_launch";
@@ -40,7 +40,7 @@ export default function CreatePoll() {
 
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${BACKEND_URL}/api/polls`, {
+        const data = await apiFetch("/api/polls", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -49,18 +49,13 @@ export default function CreatePoll() {
           body: JSON.stringify(payload),
         });
 
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.message || "Failed to create poll");
-        }
-
         clearPendingPoll();
         const toastCode = autoLaunch ? "auto_launch_success" : "launch_success";
         navigate(`/poll/${data._id}?toast=${toastCode}`);
       } catch (err) {
         setError(
           err.message === "Failed to fetch"
-            ? "Unable to connect to the server. Is backend running on port 5000?"
+            ? "Unable to connect to the server. Check backend URL and deployment status."
             : err.message
         );
       } finally {
