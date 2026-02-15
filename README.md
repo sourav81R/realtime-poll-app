@@ -76,12 +76,13 @@ GOOGLE_CALLBACK_URL=http://localhost:5000/auth/google/callback
 
 ### 3. Frontend API URL
 
-The frontend currently uses hardcoded backend URLs in:
+Create `frontend/.env`:
 
-- `frontend/src/socket.js`
-- `frontend/src/api/axios.js`
+```env
+VITE_BACKEND_URL=http://localhost:5000
+```
 
-Default is `http://localhost:5000`.
+For production (Vercel), set `VITE_BACKEND_URL` to your deployed backend URL in project environment variables.
 
 ## Run Locally
 
@@ -140,7 +141,6 @@ Backend: `http://localhost:5000`
 
 - No DB-level unique index on `Vote` for `(pollId, userId)`; add a compound unique index to harden against race conditions.
 - Rate limiting is only on poll creation; voting/auth endpoints can also be protected.
-- Frontend/backend base URLs are hardcoded in source; move to environment-based config.
 - CORS is currently open (`origin: "*"`) and should be restricted for production.
 - No automated tests yet (unit/integration/e2e).
 - Poll lifecycle controls (close poll, end time, delete/edit poll) are not implemented.

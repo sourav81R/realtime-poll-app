@@ -1,7 +1,8 @@
 import axios from "axios";
+import { BACKEND_URL } from "../socket";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: `${BACKEND_URL}/api`,
 });
 
 export default API;
