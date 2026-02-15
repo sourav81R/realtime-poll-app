@@ -23,4 +23,7 @@ const voteSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Enforce one active vote per user per poll at the database level.
+voteSchema.index({ pollId: 1, userId: 1 }, { unique: true });
+
 module.exports = mongoose.model("Vote", voteSchema);

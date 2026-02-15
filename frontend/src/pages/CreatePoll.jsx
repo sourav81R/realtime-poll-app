@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../socket";
 
@@ -28,44 +28,47 @@ export default function CreatePoll() {
     }
   };
 
-  const clearPendingPoll = () => {
+  const clearPendingPoll = useCallback(() => {
     sessionStorage.removeItem(PENDING_POLL_PAYLOAD_KEY);
     sessionStorage.removeItem(PENDING_POLL_SHOULD_LAUNCH_KEY);
-  };
+  }, []);
 
-  const launchPoll = async (payload, autoLaunch = false) => {
-    setLoading(true);
-    setError(null);
+  const launchPoll = useCallback(
+    async (payload, autoLaunch = false) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${BACKEND_URL}/api/polls`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${BACKEND_URL}/api/polls`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to create poll");
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.message || "Failed to create poll");
+        }
+
+        clearPendingPoll();
+        const toastCode = autoLaunch ? "auto_launch_success" : "launch_success";
+        navigate(`/poll/${data._id}?toast=${toastCode}`);
+      } catch (err) {
+        setError(
+          err.message === "Failed to fetch"
+            ? "Unable to connect to the server. Is backend running on port 5000?"
+            : err.message
+        );
+      } finally {
+        setLoading(false);
       }
-
-      clearPendingPoll();
-      const toastCode = autoLaunch ? "auto_launch_success" : "launch_success";
-      navigate(`/poll/${data._id}?toast=${toastCode}`);
-    } catch (err) {
-      setError(
-        err.message === "Failed to fetch"
-          ? "Unable to connect to the server. Is backend running on port 5000?"
-          : err.message
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [clearPendingPoll, navigate]
+  );
 
   useEffect(() => {
     const shouldAutoLaunch =
@@ -93,10 +96,10 @@ export default function CreatePoll() {
       setOptions(validOptions);
       autoLaunchAttemptedRef.current = true;
       launchPoll({ question: validQuestion, options: validOptions }, true);
-    } catch (_error) {
+    } catch {
       clearPendingPoll();
     }
-  }, []);
+  }, [clearPendingPoll, launchPoll]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

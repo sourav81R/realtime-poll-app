@@ -44,4 +44,14 @@ io.on("connection", (socket) => {
   socket.on("join_poll", (id) => socket.join(id));
 });
 
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE") {
+    console.error(`Port ${PORT} is already in use. Stop the other process or change PORT in .env.`);
+    process.exit(1);
+  }
+
+  console.error("Server failed to start:", error.message);
+  process.exit(1);
+});
+
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

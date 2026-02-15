@@ -9,6 +9,12 @@ const Vote = require("../models/Vote");
 
 const router = express.Router();
 
+const createHttpError = (status, message) => {
+  const error = new Error(message);
+  error.status = status;
+  return error;
+};
+
 const getOptionalUserId = (req) => {
   try {
     const authHeader = req.headers.authorization || "";
@@ -19,6 +25,85 @@ const getOptionalUserId = (req) => {
   } catch (_error) {
     return null;
   }
+};
+
+const isTransactionUnsupportedError = (error) => {
+  const message = error?.message || "";
+  return (
+    message.includes("Transaction numbers are only allowed on a replica set member or mongos") ||
+    message.includes("Transaction support is not available")
+  );
+};
+
+const applyVoteChange = async ({ pollId, userId, optionIndex, session }) => {
+  const pollQuery = Poll.findById(pollId);
+  if (session) {
+    pollQuery.session(session);
+  }
+
+  const poll = await pollQuery;
+  if (!poll) {
+    throw createHttpError(404, "Poll not found");
+  }
+
+  if (!poll.options[optionIndex]) {
+    throw createHttpError(400, "Option does not exist");
+  }
+
+  const existingVoteQuery = Vote.findOne({ pollId, userId });
+  if (session) {
+    existingVoteQuery.session(session);
+  }
+
+  const existingVote = await existingVoteQuery;
+  let currentUserVote = optionIndex;
+
+  if (existingVote && existingVote.optionIndex === optionIndex) {
+    poll.options[optionIndex].votes = Math.max(0, poll.options[optionIndex].votes - 1);
+
+    if (session) {
+      await Vote.deleteOne({ _id: existingVote._id }, { session });
+    } else {
+      await Vote.deleteOne({ _id: existingVote._id });
+    }
+
+    currentUserVote = null;
+  } else if (existingVote) {
+    if (poll.options[existingVote.optionIndex]) {
+      poll.options[existingVote.optionIndex].votes = Math.max(
+        0,
+        poll.options[existingVote.optionIndex].votes - 1
+      );
+    }
+
+    poll.options[optionIndex].votes += 1;
+    existingVote.optionIndex = optionIndex;
+
+    if (session) {
+      await existingVote.save({ session });
+    } else {
+      await existingVote.save();
+    }
+  } else {
+    poll.options[optionIndex].votes += 1;
+
+    if (session) {
+      await Vote.create([{ pollId, userId, optionIndex }], { session });
+    } else {
+      await Vote.create({ pollId, userId, optionIndex });
+    }
+  }
+
+  if (session) {
+    await poll.save({ session });
+  } else {
+    await poll.save();
+  }
+
+  const pollData = poll.toObject();
+  delete pollData.voters;
+  pollData.currentUserVote = currentUserVote;
+  return pollData;
 };
 
 // Feed: latest polls
@@ -56,15 +141,31 @@ router.get("/", async (req, res) => {
 router.post("/", auth, createPollLimiter, async (req, res) => {
   try {
     const { question, options } = req.body;
+    const normalizedQuestion =
+      typeof question === "string" ? question.trim() : "";
+    const normalizedOptions = Array.isArray(options)
+      ? options
+          .map((opt) => (typeof opt === "string" ? opt.trim() : ""))
+          .filter(Boolean)
+      : [];
+    const distinctOptions = new Set(
+      normalizedOptions.map((opt) => opt.toLowerCase())
+    );
 
-    if (!question || !options || options.length < 2) {
+    if (!normalizedQuestion || normalizedOptions.length < 2) {
       return res.status(400).json({ message: "Invalid poll data" });
+    }
+
+    if (distinctOptions.size < 2) {
+      return res.status(400).json({
+        message: "Please provide at least 2 different options",
+      });
     }
 
     const poll = new Poll({
       createdBy: req.user.id,
-      question,
-      options: options.map((opt) => ({ text: opt, votes: 0 })),
+      question: normalizedQuestion,
+      options: normalizedOptions.map((opt) => ({ text: opt, votes: 0 })),
     });
 
     await poll.save();
@@ -77,6 +178,8 @@ router.post("/", auth, createPollLimiter, async (req, res) => {
 
 // Vote / change vote / revoke vote by selecting same option again
 router.post("/:id/vote", auth, async (req, res) => {
+  let session;
+
   try {
     const { id: pollId } = req.params;
     const { optionIndex } = req.body;
@@ -90,43 +193,30 @@ router.post("/:id/vote", auth, async (req, res) => {
       return res.status(400).json({ message: "Invalid option index" });
     }
 
-    const poll = await Poll.findById(pollId);
-    if (!poll) {
-      return res.status(404).json({ message: "Poll not found" });
-    }
+    session = await mongoose.startSession();
+    let pollData;
 
-    if (!poll.options[optionIndex]) {
-      return res.status(400).json({ message: "Option does not exist" });
-    }
-
-    const existingVote = await Vote.findOne({ pollId, userId });
-    let currentUserVote = optionIndex;
-
-    if (existingVote && existingVote.optionIndex === optionIndex) {
-      poll.options[optionIndex].votes = Math.max(0, poll.options[optionIndex].votes - 1);
-      await Vote.deleteOne({ _id: existingVote._id });
-      currentUserVote = null;
-    } else if (existingVote) {
-      if (poll.options[existingVote.optionIndex]) {
-        poll.options[existingVote.optionIndex].votes = Math.max(
-          0,
-          poll.options[existingVote.optionIndex].votes - 1
-        );
+    try {
+      await session.withTransaction(async () => {
+        pollData = await applyVoteChange({
+          pollId,
+          userId,
+          optionIndex,
+          session,
+        });
+      });
+    } catch (transactionError) {
+      if (isTransactionUnsupportedError(transactionError)) {
+        pollData = await applyVoteChange({
+          pollId,
+          userId,
+          optionIndex,
+          session: null,
+        });
+      } else {
+        throw transactionError;
       }
-
-      poll.options[optionIndex].votes += 1;
-      existingVote.optionIndex = optionIndex;
-      await existingVote.save();
-    } else {
-      poll.options[optionIndex].votes += 1;
-      await Vote.create({ pollId, userId, optionIndex });
     }
-
-    await poll.save();
-
-    const pollData = poll.toObject();
-    delete pollData.voters;
-    pollData.currentUserVote = currentUserVote;
 
     const io = req.app.get("io");
     if (io) {
@@ -137,8 +227,22 @@ router.post("/:id/vote", auth, async (req, res) => {
 
     return res.json(pollData);
   } catch (err) {
+    if (err?.code === 11000) {
+      return res.status(409).json({
+        message: "A vote update conflict occurred. Please retry once.",
+      });
+    }
+
+    if (err?.status) {
+      return res.status(err.status).json({ message: err.message });
+    }
+
     console.error("Error submitting vote:", err);
     return res.status(500).json({ message: "Server error" });
+  } finally {
+    if (session) {
+      await session.endSession();
+    }
   }
 });
 

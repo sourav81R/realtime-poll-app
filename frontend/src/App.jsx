@@ -51,7 +51,8 @@ function Layout({ children, user, onLogout }) {
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
-    setMobileMenuOpen(false);
+    const timeoutId = setTimeout(() => setMobileMenuOpen(false), 0);
+    return () => clearTimeout(timeoutId);
   }, [location.pathname]);
 
   const handleLogoutFromMenu = () => {
@@ -275,16 +276,15 @@ function Layout({ children, user, onLogout }) {
 }
 
 function App() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
+  const [user, setUser] = useState(() => {
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username");
     const name = localStorage.getItem("name");
     if (token && username) {
-      setUser({ username, name: name || buildNameFromUsername(username) });
+      return { username, name: name || buildNameFromUsername(username) };
     }
-  }, []);
+    return null;
+  });
 
   const logout = () => {
     localStorage.removeItem("token");

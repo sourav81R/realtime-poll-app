@@ -21,9 +21,14 @@ router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
     const normalizedEmail = normalizeEmail(email);
+    const normalizedName = (name || "").trim();
 
-    if (!name || !normalizedEmail || !password) {
+    if (!normalizedName || !normalizedEmail || !password) {
       return res.status(400).json({ message: 'All fields required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
     const existingUser = await User.findOne({ username: normalizedEmail });
@@ -31,7 +36,7 @@ router.post('/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({
-      name: name.trim(),
+      name: normalizedName,
       username: normalizedEmail,
       password: hashedPassword,
     });
