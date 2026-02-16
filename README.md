@@ -31,7 +31,7 @@ realtime-poll-app/
 - User registration/login with JWT
 - Optional Google OAuth login
 - Create polls with multiple options
-- Vote on polls (single active vote per poll per user)
+- Vote on polls (single active vote per poll per participant identity)
 - Change vote or revoke vote
 - Poll feed with latest polls
 - Profile dashboard for created/voted polls
@@ -113,25 +113,30 @@ Backend: `http://localhost:5000`
 - `GET /api/auth/google` - start Google OAuth
 - `GET /api/polls` - poll feed (optional auth for personalized vote state)
 - `POST /api/polls` - create poll (auth required)
+- `PUT /api/polls/:id` - edit poll (owner only)
+- `DELETE /api/polls/:id` - delete poll (owner only)
 - `GET /api/polls/:id` - get poll details
-- `POST /api/polls/:id/vote` - vote/change/revoke vote (auth required)
+- `POST /api/polls/:id/vote` - vote/change/revoke vote (works with or without auth)
 - `GET /api/polls/me/dashboard` - profile dashboard (auth required)
 
 ## Notes
 
 ### 1) Fairness / Anti-Abuse Mechanisms (2)
 
-1. One active vote per user per poll:
-   Voting requires auth, and server logic checks existing vote by `{ pollId, userId }`. A user can switch option or revoke (same option click), but cannot stack multiple active votes on one poll.
-2. Poll creation rate limiting:
-   `express-rate-limit` is applied on `POST /api/polls` with a limit of 10 create requests per IP per 15 minutes.
+1. One active vote per participant identity per poll:
+   Backend resolves a voter identity (`user:<id>` for authenticated users, `guest:<token>` for guests, with IP fallback) and enforces one active vote per poll with DB-level unique indexes.
+2. Rate limiting on abuse-prone actions:
+   `express-rate-limit` is applied on poll creation and voting endpoints to reduce scripted/spam traffic from the same IP.
 
 ### 2) Edge Cases Handled
 
 - Invalid poll IDs return `400` instead of crashing.
 - Invalid/missing option indices are validated.
 - Poll-not-found returns `404`.
+- Share-link visitors can vote without authentication.
 - Revoke vote flow is supported by selecting the same option again.
+- Poll owners can edit or delete their own polls.
+- Changing poll options resets existing votes to keep vote-option mapping consistent.
 - Vote decrements are clamped with `Math.max(0, ...)` to avoid negative counts.
 - Feed/profile pages handle loading, error, and empty states.
 - Non-auth users trying protected actions get guided to login/signup UI.
@@ -140,11 +145,10 @@ Backend: `http://localhost:5000`
 
 ### 3) Known Limitations / Next Improvements
 
-- No DB-level unique index on `Vote` for `(pollId, userId)`; add a compound unique index to harden against race conditions.
-- Rate limiting is only on poll creation; voting/auth endpoints can also be protected.
+- Determined attackers can still bypass browser/device identity by rotating IPs or using many devices.
 - CORS is currently open (`origin: "*"`) and should be restricted for production.
 - No automated tests yet (unit/integration/e2e).
-- Poll lifecycle controls (close poll, end time, delete/edit poll) are not implemented.
+- Poll close/end-time scheduling is not implemented.
 
 ## Credits
 

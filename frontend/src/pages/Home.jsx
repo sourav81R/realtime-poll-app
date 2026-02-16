@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { apiFetch } from "../api/http";
+import { buildVoterHeaders } from "../utils/voterIdentity";
+import EditPollModal from "../components/EditPollModal";
 
 function totalVotes(options) {
   return options.reduce((sum, option) => sum + option.votes, 0);
@@ -10,17 +12,18 @@ export default function Home() {
   const [polls, setPolls] = useState([]);
   const [loadingFeed, setLoadingFeed] = useState(true);
   const [feedError, setFeedError] = useState("");
-  const [showAuthPopup, setShowAuthPopup] = useState(false);
-  const navigate = useNavigate();
+  const [editingPoll, setEditingPoll] = useState(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editError, setEditError] = useState("");
+  const [deletingPollId, setDeletingPollId] = useState(null);
 
   const loadFeed = async () => {
     setLoadingFeed(true);
     setFeedError("");
 
     try {
-      const token = localStorage.getItem("token");
       const data = await apiFetch("/api/polls", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers: buildVoterHeaders(),
       });
       setPolls(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -35,19 +38,10 @@ export default function Home() {
   }, []);
 
   const handleVote = async (pollId, optionIndex) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setShowAuthPopup(true);
-      return;
-    }
-
     try {
       const data = await apiFetch(`/api/polls/${pollId}/vote`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: buildVoterHeaders({ includeJson: true }),
         body: JSON.stringify({ optionIndex }),
       });
 
@@ -65,6 +59,60 @@ export default function Home() {
       );
     } catch (err) {
       alert(err.message || "Vote failed");
+    }
+  };
+
+  const handleSaveEdit = async (payload) => {
+    if (!editingPoll) return;
+
+    setSavingEdit(true);
+    setEditError("");
+
+    try {
+      const data = await apiFetch(`/api/polls/${editingPoll._id}`, {
+        method: "PUT",
+        headers: buildVoterHeaders({ includeJson: true }),
+        body: JSON.stringify(payload),
+      });
+      const { message: _message, ...updatedPoll } = data;
+
+      setPolls((prev) =>
+        prev.map((poll) =>
+          poll._id === editingPoll._id
+            ? {
+                ...poll,
+                ...updatedPoll,
+              }
+            : poll
+        )
+      );
+
+      setEditingPoll(null);
+    } catch (err) {
+      setEditError(err.message || "Failed to update poll");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleDeletePoll = async (poll) => {
+    const shouldDelete = window.confirm(
+      "Delete this poll permanently? This will remove all votes."
+    );
+    if (!shouldDelete) return;
+
+    setDeletingPollId(poll._id);
+
+    try {
+      await apiFetch(`/api/polls/${poll._id}`, {
+        method: "DELETE",
+        headers: buildVoterHeaders(),
+      });
+      setPolls((prev) => prev.filter((item) => item._id !== poll._id));
+    } catch (err) {
+      alert(err.message || "Failed to delete poll");
+    } finally {
+      setDeletingPollId(null);
     }
   };
 
@@ -107,12 +155,36 @@ export default function Home() {
                     <h3 className="display-font text-lg sm:text-xl font-bold text-slate-900 leading-snug break-words">
                       {poll.question}
                     </h3>
-                    <Link
-                      to={`/poll/${poll._id}`}
-                      className="btn-soft px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0"
-                    >
-                      Open
-                    </Link>
+                    <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 shrink-0">
+                      <Link
+                        to={`/poll/${poll._id}`}
+                        className="btn-soft px-3 py-1.5 rounded-lg text-xs font-semibold"
+                      >
+                        Open
+                      </Link>
+                      {poll.isOwner && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingPoll(poll);
+                              setEditError("");
+                            }}
+                            className="btn-soft px-3 py-1.5 rounded-lg text-xs font-semibold"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeletePoll(poll)}
+                            className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+                            disabled={deletingPollId === poll._id}
+                          >
+                            {deletingPollId === poll._id ? "Deleting..." : "Delete"}
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   <div className="mt-4 space-y-2">
@@ -185,41 +257,19 @@ export default function Home() {
         </div>
       </div>
 
-      {showAuthPopup && (
-        <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-[2px] flex items-center justify-center z-50 p-4">
-          <div className="glass-panel rounded-2xl p-5 sm:p-6 w-full max-w-md">
-            <h3 className="display-font text-lg sm:text-xl font-bold text-slate-900">
-              Login or Signup Required
-            </h3>
-            <p className="mt-2 text-sm text-slate-600">
-              Please login or signup first to vote in the poll feed.
-            </p>
-            <div className="mt-5 flex flex-col sm:flex-row gap-3">
-              <button
-                type="button"
-                onClick={() => navigate("/login")}
-                className="btn-accent flex-1 rounded-xl py-2.5 font-semibold"
-              >
-                Login
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/register")}
-                className="btn-soft flex-1 rounded-xl py-2.5 font-semibold"
-              >
-                Signup
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowAuthPopup(false)}
-              className="w-full mt-3 text-sm text-slate-500 hover:text-slate-700"
-            >
-              Maybe later
-            </button>
-          </div>
-        </div>
-      )}
+      <EditPollModal
+        key={editingPoll?._id || "home-edit-modal"}
+        poll={editingPoll}
+        isSaving={savingEdit}
+        error={editError}
+        onClose={() => {
+          if (savingEdit) return;
+          setEditingPoll(null);
+          setEditError("");
+        }}
+        onSave={handleSaveEdit}
+      />
+
     </div>
   );
 }

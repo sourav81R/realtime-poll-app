@@ -11,8 +11,12 @@ const voteSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
       index: true,
+    },
+    voterKey: {
+      type: String,
+      required: true,
+      trim: true,
     },
     optionIndex: {
       type: Number,
@@ -23,7 +27,22 @@ const voteSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Enforce one active vote per user per poll at the database level.
-voteSchema.index({ pollId: 1, userId: 1 }, { unique: true });
+// One vote per authenticated user per poll (when userId is present).
+voteSchema.index(
+  { pollId: 1, userId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { userId: { $exists: true } },
+  }
+);
+
+// One vote per resolved voter identity (user token, guest token, or IP fallback) per poll.
+voteSchema.index(
+  { pollId: 1, voterKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { voterKey: { $exists: true } },
+  }
+);
 
 module.exports = mongoose.model("Vote", voteSchema);

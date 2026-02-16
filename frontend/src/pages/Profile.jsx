@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/http";
+import { buildVoterHeaders } from "../utils/voterIdentity";
+import EditPollModal from "../components/EditPollModal";
 
 function buildNameFromUsername(username) {
   if (!username) return "User";
@@ -20,7 +22,7 @@ function pollTotalVotes(options = []) {
   return options.reduce((sum, option) => sum + option.votes, 0);
 }
 
-function PollCard({ poll, type }) {
+function PollCard({ poll, type, canManage, onEdit, onDelete, isDeleting }) {
   const selectedOption =
     typeof poll.currentUserVote === "number" ? poll.options?.[poll.currentUserVote]?.text : null;
 
@@ -39,6 +41,25 @@ function PollCard({ poll, type }) {
       >
         Open Poll
       </Link>
+      {canManage && (
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onEdit(poll)}
+            className="btn-soft rounded-lg px-3 py-1.5 text-xs font-semibold"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={() => onDelete(poll)}
+            className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </button>
+        </div>
+      )}
     </article>
   );
 }
@@ -53,6 +74,10 @@ export default function Profile({ user, onLogout }) {
   const [createdPolls, setCreatedPolls] = useState([]);
   const [votedPolls, setVotedPolls] = useState([]);
   const [mobileTab, setMobileTab] = useState("created");
+  const [editingPoll, setEditingPoll] = useState(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editError, setEditError] = useState("");
+  const [deletingPollId, setDeletingPollId] = useState(null);
 
   const createdCount = createdPolls.length;
   const votedCount = votedPolls.length;
@@ -86,6 +111,56 @@ export default function Profile({ user, onLogout }) {
   const handleLogout = () => {
     onLogout();
     navigate("/");
+  };
+
+  const handleSaveEdit = async (payload) => {
+    if (!editingPoll) return;
+
+    setSavingEdit(true);
+    setEditError("");
+
+    try {
+      const data = await apiFetch(`/api/polls/${editingPoll._id}`, {
+        method: "PUT",
+        headers: buildVoterHeaders({ includeJson: true }),
+        body: JSON.stringify(payload),
+      });
+      const { message: _message, ...updatedPoll } = data;
+
+      setCreatedPolls((prev) =>
+        prev.map((poll) => (poll._id === editingPoll._id ? { ...poll, ...updatedPoll } : poll))
+      );
+      setVotedPolls((prev) =>
+        prev.map((poll) => (poll._id === editingPoll._id ? { ...poll, ...updatedPoll } : poll))
+      );
+      setEditingPoll(null);
+    } catch (err) {
+      setEditError(err.message || "Failed to update poll");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleDeletePoll = async (poll) => {
+    const shouldDelete = window.confirm(
+      "Delete this poll permanently? This will remove all votes."
+    );
+    if (!shouldDelete) return;
+
+    setDeletingPollId(poll._id);
+
+    try {
+      await apiFetch(`/api/polls/${poll._id}`, {
+        method: "DELETE",
+        headers: buildVoterHeaders(),
+      });
+      setCreatedPolls((prev) => prev.filter((item) => item._id !== poll._id));
+      setVotedPolls((prev) => prev.filter((item) => item._id !== poll._id));
+    } catch (err) {
+      alert(err.message || "Failed to delete poll");
+    } finally {
+      setDeletingPollId(null);
+    }
   };
 
   if (!token) {
@@ -193,7 +268,18 @@ export default function Profile({ user, onLogout }) {
                 </p>
               ) : (
                 (mobileTab === "created" ? createdPolls : votedPolls).map((poll) => (
-                  <PollCard key={poll._id} poll={poll} type={mobileTab} />
+                  <PollCard
+                    key={poll._id}
+                    poll={poll}
+                    type={mobileTab}
+                    canManage={mobileTab === "created"}
+                    onEdit={(selectedPoll) => {
+                      setEditingPoll(selectedPoll);
+                      setEditError("");
+                    }}
+                    onDelete={handleDeletePoll}
+                    isDeleting={deletingPollId === poll._id}
+                  />
                 ))
               )}
             </div>
@@ -248,7 +334,18 @@ export default function Profile({ user, onLogout }) {
             ) : (
               <div className="mt-4 space-y-3">
                 {createdPolls.map((poll) => (
-                  <PollCard key={poll._id} poll={poll} type="created" />
+                  <PollCard
+                    key={poll._id}
+                    poll={poll}
+                    type="created"
+                    canManage
+                    onEdit={(selectedPoll) => {
+                      setEditingPoll(selectedPoll);
+                      setEditError("");
+                    }}
+                    onDelete={handleDeletePoll}
+                    isDeleting={deletingPollId === poll._id}
+                  />
                 ))}
               </div>
             )}
@@ -274,6 +371,19 @@ export default function Profile({ user, onLogout }) {
           </section>
         </div>
       </div>
+
+      <EditPollModal
+        key={editingPoll?._id || "profile-edit-modal"}
+        poll={editingPoll}
+        isSaving={savingEdit}
+        error={editError}
+        onClose={() => {
+          if (savingEdit) return;
+          setEditingPoll(null);
+          setEditError("");
+        }}
+        onSave={handleSaveEdit}
+      />
     </div>
   );
 }

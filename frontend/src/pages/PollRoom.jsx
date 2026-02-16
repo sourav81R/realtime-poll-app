@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { apiFetch } from "../api/http";
 import { isBackendConfigured, socket } from "../socket";
+import { buildVoterHeaders } from "../utils/voterIdentity";
+import EditPollModal from "../components/EditPollModal";
 
 export default function PollRoom() {
   const { id: pollId } = useParams();
@@ -14,7 +16,10 @@ export default function PollRoom() {
   const [activeTab, setActiveTab] = useState("vote");
   const [toastMessage, setToastMessage] = useState("");
   const [currentUserVote, setCurrentUserVote] = useState(null);
-  const [showAuthPopup, setShowAuthPopup] = useState(false);
+  const [editingPoll, setEditingPoll] = useState(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editError, setEditError] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -43,9 +48,8 @@ export default function PollRoom() {
 
     const loadPoll = async () => {
       try {
-        const token = localStorage.getItem("token");
         const data = await apiFetch(`/api/polls/${pollId}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: buildVoterHeaders(),
         });
         if (!active) return;
         setPoll(data);
@@ -83,34 +87,31 @@ export default function PollRoom() {
 
     const onConnect = () => setIsConnected(true);
     const onDisconnect = () => setIsConnected(false);
+    const onPollDeleted = () => {
+      alert("This poll has been deleted by the owner.");
+      navigate("/");
+    };
 
     socket.on("update_poll", handleUpdate);
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
+    socket.on("poll_deleted", onPollDeleted);
 
     return () => {
       active = false;
       socket.off("update_poll", handleUpdate);
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
+      socket.off("poll_deleted", onPollDeleted);
       socket.disconnect();
     };
-  }, [pollId]);
+  }, [navigate, pollId]);
 
   const handleVote = async (optionIndex) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setShowAuthPopup(true);
-      return;
-    }
-
     try {
       const data = await apiFetch(`/api/polls/${pollId}/vote`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: buildVoterHeaders({ includeJson: true }),
         body: JSON.stringify({ optionIndex }),
       });
 
@@ -161,6 +162,58 @@ export default function PollRoom() {
     doc.save(`poll_results_${pollId}.pdf`);
   };
 
+  const handleSaveEdit = async (payload) => {
+    if (!editingPoll) return;
+
+    setSavingEdit(true);
+    setEditError("");
+
+    try {
+      const data = await apiFetch(`/api/polls/${pollId}`, {
+        method: "PUT",
+        headers: buildVoterHeaders({ includeJson: true }),
+        body: JSON.stringify(payload),
+      });
+      const { message, ...updatedPoll } = data;
+
+      setPoll((prev) => (prev ? { ...prev, ...updatedPoll } : updatedPoll));
+      setCurrentUserVote(
+        typeof updatedPoll.currentUserVote === "number" ? updatedPoll.currentUserVote : null
+      );
+      setEditingPoll(null);
+
+      if (typeof message === "string" && message.includes("votes reset")) {
+        setToastMessage("Poll updated. Votes were reset because options changed.");
+      } else {
+        setToastMessage("Poll updated successfully.");
+      }
+    } catch (err) {
+      setEditError(err.message || "Failed to update poll");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleDeletePoll = async () => {
+    const shouldDelete = window.confirm(
+      "Delete this poll permanently? This will remove all votes."
+    );
+    if (!shouldDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await apiFetch(`/api/polls/${pollId}`, {
+        method: "DELETE",
+        headers: buildVoterHeaders(),
+      });
+      navigate("/");
+    } catch (err) {
+      alert(err.message || "Failed to delete poll");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
@@ -196,6 +249,28 @@ export default function PollRoom() {
             {poll.question}
           </h1>
           <div className="flex flex-wrap gap-2 shrink-0 w-full sm:w-auto">
+            {poll.isOwner && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingPoll(poll);
+                    setEditError("");
+                  }}
+                  className="btn-soft inline-flex items-center justify-center px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors w-full sm:w-auto"
+                >
+                  Edit Poll
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeletePoll}
+                  className="inline-flex items-center justify-center px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-colors w-full sm:w-auto"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? "Deleting..." : "Delete Poll"}
+                </button>
+              </>
+            )}
             <button
               onClick={handleDownloadPDF}
               className="btn-soft inline-flex items-center justify-center px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors w-full sm:w-auto"
@@ -281,7 +356,7 @@ export default function PollRoom() {
             <p className="text-xs sm:text-sm text-slate-600">
               {hasVote
                 ? "You can change your vote by selecting another option, or revoke by selecting your current option again."
-                : "Login/signup to vote. You can keep only one active vote at a time."}
+                : "Select an option to vote. You can keep only one active vote per poll at a time."}
             </p>
           </div>
         ) : (
@@ -342,41 +417,19 @@ export default function PollRoom() {
         </div>
       </div>
 
-      {showAuthPopup && (
-        <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-[2px] flex items-center justify-center z-50 p-4">
-          <div className="glass-panel rounded-2xl p-5 sm:p-6 w-full max-w-md">
-            <h3 className="display-font text-lg sm:text-xl font-bold text-slate-900">
-              Login or Signup Required
-            </h3>
-            <p className="mt-2 text-sm text-slate-600">
-              Please login or signup first to vote in this poll.
-            </p>
-            <div className="mt-5 flex flex-col sm:flex-row gap-3">
-              <button
-                type="button"
-                onClick={() => navigate("/login")}
-                className="btn-accent flex-1 rounded-xl py-2.5 font-semibold"
-              >
-                Login
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/register")}
-                className="btn-soft flex-1 rounded-xl py-2.5 font-semibold"
-              >
-                Signup
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowAuthPopup(false)}
-              className="w-full mt-3 text-sm text-slate-500 hover:text-slate-700"
-            >
-              Maybe later
-            </button>
-          </div>
-        </div>
-      )}
+      <EditPollModal
+        key={editingPoll?._id || "pollroom-edit-modal"}
+        poll={editingPoll}
+        isSaving={savingEdit}
+        error={editError}
+        onClose={() => {
+          if (savingEdit) return;
+          setEditingPoll(null);
+          setEditError("");
+        }}
+        onSave={handleSaveEdit}
+      />
+
     </div>
   );
 }

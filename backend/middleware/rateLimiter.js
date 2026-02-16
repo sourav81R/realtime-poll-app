@@ -8,4 +8,15 @@ const createPollLimiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
-module.exports = createPollLimiter;
+const voteLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 40, // Limit each IP to 40 vote requests per minute
+  message: { message: "Too many vote attempts from this IP, please try again shortly." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+module.exports = {
+  createPollLimiter,
+  voteLimiter,
+};
