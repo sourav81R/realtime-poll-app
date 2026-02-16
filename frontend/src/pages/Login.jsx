@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { apiFetch } from "../api/http";
-import { buildBackendUrl } from "../socket";
+import { startGoogleOAuth } from "../api/oauth";
 
 const PENDING_POLL_SHOULD_LAUNCH_KEY = "pending_poll_should_launch";
 
@@ -75,6 +75,7 @@ export default function Login({ onLogin }) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [isGoogleStarting, setIsGoogleStarting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const oauthError = new URLSearchParams(location.search).get("error");
@@ -128,11 +129,15 @@ export default function Login({ onLogin }) {
     }
   };
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
+    setError("");
+    setIsGoogleStarting(true);
+
     try {
-      window.location.href = buildBackendUrl("/api/auth/google");
+      await startGoogleOAuth();
     } catch (err) {
       setError(err.message || "Google login is unavailable.");
+      setIsGoogleStarting(false);
     }
   };
 
@@ -198,10 +203,11 @@ export default function Login({ onLogin }) {
       <button
         type="button"
         onClick={handleGoogleLogin}
-        className="w-full inline-flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 py-3 rounded-xl hover:bg-teal-50 hover:border-teal-300 transition text-sm sm:text-base font-semibold"
+        disabled={isGoogleStarting}
+        className="w-full inline-flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 py-3 rounded-xl hover:bg-teal-50 hover:border-teal-300 transition text-sm sm:text-base font-semibold disabled:opacity-70 disabled:cursor-not-allowed"
       >
         <GoogleIcon />
-        Continue with Google
+        {isGoogleStarting ? "Connecting to server..." : "Continue with Google"}
       </button>
       <p className="mt-4 text-center text-sm text-slate-600">
         Don't have an account?{" "}
