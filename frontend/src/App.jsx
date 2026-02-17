@@ -6,6 +6,7 @@ import PollRoom from "./pages/PollRoom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
+import { getRoleFromToken } from "./utils/authToken";
 
 function buildNameFromUsername(username) {
   if (!username) return "User";
@@ -280,12 +281,13 @@ function App() {
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username");
     const name = localStorage.getItem("name");
-    const role = localStorage.getItem("role");
+    const role = localStorage.getItem("role") || getRoleFromToken(token) || "user";
     if (token && username) {
+      localStorage.setItem("role", role);
       return {
         username,
         name: name || buildNameFromUsername(username),
-        role: role || "user",
+        role,
       };
     }
     return null;

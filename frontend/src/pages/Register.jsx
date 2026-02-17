@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { apiFetch } from "../api/http";
 import { startGoogleOAuth } from "../api/oauth";
+import { getRoleFromToken } from "../utils/authToken";
 
 const PENDING_POLL_SHOULD_LAUNCH_KEY = "pending_poll_should_launch";
 
@@ -89,7 +90,7 @@ export default function Register({ onLogin }) {
         body: JSON.stringify({ name, email, password }),
       });
 
-      const role = data.role || "user";
+      const role = data.role || getRoleFromToken(data.token) || "user";
       localStorage.setItem("token", data.token);
       localStorage.setItem("username", data.username);
       localStorage.setItem("name", data.name || data.username?.split("@")[0] || "User");

@@ -138,6 +138,14 @@ const clearNonAdminUsers = async () => {
   return userIds.length;
 };
 
+const markLoginActivity = async (user) => {
+  if (!user) return;
+  const now = new Date();
+  user.lastLoginAt = now;
+  user.lastActiveAt = now;
+  await user.save();
+};
+
 // Register
 router.post("/register", async (req, res) => {
   try {
@@ -166,6 +174,8 @@ router.post("/register", async (req, res) => {
       username: normalizedEmail,
       password: hashedPassword,
       role,
+      lastLoginAt: new Date(),
+      lastActiveAt: new Date(),
     });
     await user.save();
 
@@ -190,6 +200,7 @@ router.post("/login", async (req, res) => {
     const { adminEmail, adminPassword } = getAdminCredentials();
     if (loginEmail === adminEmail && password === adminPassword) {
       const adminUser = await ensureAdminUser({ adminEmail, adminPassword });
+      await markLoginActivity(adminUser);
       const adminToken = signToken(adminUser);
       return res.json(buildAuthResponse(adminUser, adminToken));
     }
@@ -200,6 +211,7 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
+    await markLoginActivity(user);
     const token = signToken(user);
     res.json(buildAuthResponse(user, token));
   } catch (err) {
@@ -214,7 +226,7 @@ router.get(
   async (_req, res) => {
     try {
       const users = await User.find()
-        .select("_id name username role")
+        .select("_id name username role createdAt lastLoginAt lastActiveAt")
         .sort({ role: 1, username: 1 });
 
       return res.json({ users });
@@ -285,6 +297,7 @@ router.get(
   }),
   async (req, res) => {
     try {
+      await markLoginActivity(req.user);
       const token = signToken(req.user);
 
       const redirectBase = process.env.CLIENT_URL || "http://localhost:5173";

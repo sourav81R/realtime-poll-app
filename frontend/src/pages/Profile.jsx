@@ -22,6 +22,21 @@ function pollTotalVotes(options = []) {
   return options.reduce((sum, option) => sum + option.votes, 0);
 }
 
+function formatDateTime(value) {
+  if (!value) return "Never";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Unknown";
+
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
 function PollCard({ poll, type, canManage, onEdit, onDelete, isDeleting }) {
   const selectedOption =
     typeof poll.currentUserVote === "number" ? poll.options?.[poll.currentUserVote]?.text : null;
@@ -75,6 +90,15 @@ function AdminUserCard({ userItem, onDelete, isDeleting }) {
         <p className="text-xs text-slate-600 truncate">{userItem.username}</p>
         <p className="text-[11px] uppercase tracking-wide text-slate-500 mt-1">
           {isAdminUser ? "Admin" : "User"}
+        </p>
+        <p className="text-[11px] text-slate-600 mt-1">
+          Joined: {formatDateTime(userItem.createdAt)}
+        </p>
+        <p className="text-[11px] text-slate-600">
+          Last Login: {formatDateTime(userItem.lastLoginAt)}
+        </p>
+        <p className="text-[11px] text-slate-600">
+          Last Active: {formatDateTime(userItem.lastActiveAt)}
         </p>
       </div>
       {isAdminUser ? (
