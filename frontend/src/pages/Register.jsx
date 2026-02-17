@@ -89,12 +89,15 @@ export default function Register({ onLogin }) {
         body: JSON.stringify({ name, email, password }),
       });
 
+      const role = data.role || "user";
       localStorage.setItem("token", data.token);
       localStorage.setItem("username", data.username);
       localStorage.setItem("name", data.name || data.username?.split("@")[0] || "User");
+      localStorage.setItem("role", role);
       onLogin({
         username: data.username,
         name: data.name || data.username?.split("@")[0] || "User",
+        role,
       });
 
       const goToCreate =

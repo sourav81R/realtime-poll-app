@@ -85,11 +85,13 @@ export default function Login({ onLogin }) {
     const token = params.get("token");
     const username = params.get("username");
     const name = params.get("name");
+    const role = params.get("role") || "user";
     if (token && username) {
       localStorage.setItem("token", token);
       localStorage.setItem("username", username);
       localStorage.setItem("name", name || username.split("@")[0] || "User");
-      onLogin({ username, name: name || username.split("@")[0] || "User" });
+      localStorage.setItem("role", role);
+      onLogin({ username, name: name || username.split("@")[0] || "User", role });
       const goToCreate =
         sessionStorage.getItem(PENDING_POLL_SHOULD_LAUNCH_KEY) === "1";
       navigate(goToCreate ? "/create" : "/", { replace: true });
@@ -110,12 +112,15 @@ export default function Login({ onLogin }) {
         body: JSON.stringify({ email, password }),
       });
 
+      const role = data.role || "user";
       localStorage.setItem("token", data.token);
       localStorage.setItem("username", data.username);
       localStorage.setItem("name", data.name || data.username?.split("@")[0] || "User");
+      localStorage.setItem("role", role);
       onLogin({
         username: data.username,
         name: data.name || data.username?.split("@")[0] || "User",
+        role,
       });
       const goToCreate =
         sessionStorage.getItem(PENDING_POLL_SHOULD_LAUNCH_KEY) === "1";

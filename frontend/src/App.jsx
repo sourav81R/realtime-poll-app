@@ -280,8 +280,13 @@ function App() {
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username");
     const name = localStorage.getItem("name");
+    const role = localStorage.getItem("role");
     if (token && username) {
-      return { username, name: name || buildNameFromUsername(username) };
+      return {
+        username,
+        name: name || buildNameFromUsername(username),
+        role: role || "user",
+      };
     }
     return null;
   });
@@ -290,6 +295,7 @@ function App() {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
     localStorage.removeItem("name");
+    localStorage.removeItem("role");
     setUser(null);
   };
 

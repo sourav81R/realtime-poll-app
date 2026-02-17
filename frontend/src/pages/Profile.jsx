@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/http";
 import { buildVoterHeaders } from "../utils/voterIdentity";
@@ -64,11 +64,42 @@ function PollCard({ poll, type, canManage, onEdit, onDelete, isDeleting }) {
   );
 }
 
+function AdminUserCard({ userItem, onDelete, isDeleting }) {
+  const displayName = userItem.name || buildNameFromUsername(userItem.username);
+  const isAdminUser = userItem.role === "admin";
+
+  return (
+    <article className="bg-white/85 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3">
+      <div className="min-w-0">
+        <p className="font-semibold text-slate-900 truncate">{displayName}</p>
+        <p className="text-xs text-slate-600 truncate">{userItem.username}</p>
+        <p className="text-[11px] uppercase tracking-wide text-slate-500 mt-1">
+          {isAdminUser ? "Admin" : "User"}
+        </p>
+      </div>
+      {isAdminUser ? (
+        <span className="text-xs font-semibold text-slate-500">Protected</span>
+      ) : (
+        <button
+          type="button"
+          onClick={() => onDelete(userItem)}
+          className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+          disabled={isDeleting}
+        >
+          {isDeleting ? "Deleting..." : "Delete"}
+        </button>
+      )}
+    </article>
+  );
+}
+
 export default function Profile({ user, onLogout }) {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const username = user?.username || localStorage.getItem("username") || "";
   const name = user?.name || localStorage.getItem("name") || buildNameFromUsername(username);
+  const role = user?.role || localStorage.getItem("role") || "user";
+  const isAdmin = role === "admin";
   const [loading, setLoading] = useState(Boolean(token));
   const [error, setError] = useState("");
   const [createdPolls, setCreatedPolls] = useState([]);
@@ -78,6 +109,11 @@ export default function Profile({ user, onLogout }) {
   const [savingEdit, setSavingEdit] = useState(false);
   const [editError, setEditError] = useState("");
   const [deletingPollId, setDeletingPollId] = useState(null);
+  const [adminUsers, setAdminUsers] = useState([]);
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [adminError, setAdminError] = useState("");
+  const [deletingUserId, setDeletingUserId] = useState(null);
+  const [clearingUsers, setClearingUsers] = useState(false);
 
   const createdCount = createdPolls.length;
   const votedCount = votedPolls.length;
@@ -107,6 +143,27 @@ export default function Profile({ user, onLogout }) {
 
     loadDashboard();
   }, [token]);
+
+  const loadAdminUsers = useCallback(async () => {
+    if (!token || !isAdmin) return;
+
+    setAdminLoading(true);
+    setAdminError("");
+    try {
+      const data = await apiFetch("/api/auth/admin/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAdminUsers(Array.isArray(data.users) ? data.users : []);
+    } catch (err) {
+      setAdminError(err.message || "Failed to load users");
+    } finally {
+      setAdminLoading(false);
+    }
+  }, [isAdmin, token]);
+
+  useEffect(() => {
+    loadAdminUsers();
+  }, [loadAdminUsers]);
 
   const handleLogout = () => {
     onLogout();
@@ -160,6 +217,56 @@ export default function Profile({ user, onLogout }) {
       alert(err.message || "Failed to delete poll");
     } finally {
       setDeletingPollId(null);
+    }
+  };
+
+  const handleDeleteUser = async (targetUser) => {
+    if (!isAdmin || !token || targetUser.role === "admin") return;
+
+    const shouldDelete = window.confirm(
+      `Delete user ${targetUser.username}? Their polls and votes will be removed.`
+    );
+    if (!shouldDelete) return;
+
+    setDeletingUserId(targetUser._id);
+    try {
+      await apiFetch(`/api/auth/admin/users/${targetUser._id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAdminUsers((prev) => prev.filter((userItem) => userItem._id !== targetUser._id));
+    } catch (err) {
+      alert(err.message || "Failed to delete user");
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
+
+  const handleClearAllUsers = async () => {
+    if (!isAdmin || !token) return;
+
+    const hasUsersToDelete = adminUsers.some((userItem) => userItem.role !== "admin");
+    if (!hasUsersToDelete) {
+      alert("No non-admin users found.");
+      return;
+    }
+
+    const shouldClear = window.confirm(
+      "Clear all non-admin users? This removes their accounts, polls, and votes."
+    );
+    if (!shouldClear) return;
+
+    setClearingUsers(true);
+    try {
+      await apiFetch("/api/auth/admin/users", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAdminUsers((prev) => prev.filter((userItem) => userItem.role === "admin"));
+    } catch (err) {
+      alert(err.message || "Failed to clear users");
+    } finally {
+      setClearingUsers(false);
     }
   };
 
@@ -285,6 +392,41 @@ export default function Profile({ user, onLogout }) {
             </div>
           )}
         </section>
+
+        {isAdmin && (
+          <section className="glass-panel rounded-2xl p-4">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="display-font text-lg font-bold text-slate-900">Admin Panel</h2>
+              <button
+                type="button"
+                onClick={handleClearAllUsers}
+                className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+                disabled={clearingUsers}
+              >
+                {clearingUsers ? "Clearing..." : "Clear All"}
+              </button>
+            </div>
+
+            {adminLoading ? (
+              <p className="mt-4 text-sm text-slate-600">Loading users...</p>
+            ) : adminError ? (
+              <p className="mt-4 text-sm text-red-700">{adminError}</p>
+            ) : adminUsers.length === 0 ? (
+              <p className="mt-4 text-sm text-slate-600">No users found.</p>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {adminUsers.map((userItem) => (
+                  <AdminUserCard
+                    key={userItem._id}
+                    userItem={userItem}
+                    onDelete={handleDeleteUser}
+                    isDeleting={deletingUserId === userItem._id}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
       </div>
 
       <div className="hidden md:grid grid-cols-12 gap-5">
@@ -351,24 +493,61 @@ export default function Profile({ user, onLogout }) {
             )}
           </section>
 
-          <section className="glass-panel rounded-2xl p-5">
-            <h2 className="display-font text-xl sm:text-2xl font-bold text-slate-900">
-              Polls You Voted
-            </h2>
-            {loading ? (
-              <p className="mt-4 text-sm text-slate-600">Loading profile data...</p>
-            ) : error ? (
-              <p className="mt-4 text-sm text-red-700">{error}</p>
-            ) : votedPolls.length === 0 ? (
-              <p className="mt-4 text-sm text-slate-600">You have not voted in any polls yet.</p>
-            ) : (
-              <div className="mt-4 space-y-3">
-                {votedPolls.map((poll) => (
-                  <PollCard key={poll._id} poll={poll} type="voted" />
-                ))}
+          {isAdmin ? (
+            <section className="glass-panel rounded-2xl p-5">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="display-font text-xl sm:text-2xl font-bold text-slate-900">
+                  Admin Panel
+                </h2>
+                <button
+                  type="button"
+                  onClick={handleClearAllUsers}
+                  className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+                  disabled={clearingUsers}
+                >
+                  {clearingUsers ? "Clearing..." : "Clear All"}
+                </button>
               </div>
-            )}
-          </section>
+
+              {adminLoading ? (
+                <p className="mt-4 text-sm text-slate-600">Loading users...</p>
+              ) : adminError ? (
+                <p className="mt-4 text-sm text-red-700">{adminError}</p>
+              ) : adminUsers.length === 0 ? (
+                <p className="mt-4 text-sm text-slate-600">No users found.</p>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {adminUsers.map((userItem) => (
+                    <AdminUserCard
+                      key={userItem._id}
+                      userItem={userItem}
+                      onDelete={handleDeleteUser}
+                      isDeleting={deletingUserId === userItem._id}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          ) : (
+            <section className="glass-panel rounded-2xl p-5">
+              <h2 className="display-font text-xl sm:text-2xl font-bold text-slate-900">
+                Polls You Voted
+              </h2>
+              {loading ? (
+                <p className="mt-4 text-sm text-slate-600">Loading profile data...</p>
+              ) : error ? (
+                <p className="mt-4 text-sm text-red-700">{error}</p>
+              ) : votedPolls.length === 0 ? (
+                <p className="mt-4 text-sm text-slate-600">You have not voted in any polls yet.</p>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {votedPolls.map((poll) => (
+                    <PollCard key={poll._id} poll={poll} type="voted" />
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
         </div>
       </div>
 
