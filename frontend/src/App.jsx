@@ -254,63 +254,84 @@ function Layout({ children, user, onLogout }) {
       )}
 
       <main className="flex-grow rise-in">{children}</main>
-      <footer className="mt-8 border-t border-slate-200/80 bg-white/75 backdrop-blur-sm">
-        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-12 py-4 sm:py-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs sm:text-sm text-slate-600">
-            Copyright &copy; {currentYear} PollRoom. All rights reserved.
-          </p>
-          <div className="flex flex-col items-start gap-2 sm:items-end">
-            <p className="text-xs sm:text-sm text-slate-600">
-              Developed by{" "}
-              <a
-                href="https://github.com/sourav81R"
-                target="_blank"
-                rel="noreferrer"
-                className="font-semibold text-teal-700 hover:text-teal-800 underline underline-offset-2"
-              >
-                Sourav Chowdhury
-              </a>
-            </p>
-            <div className="flex items-center gap-2">
-              <a
-                href="https://github.com/sourav81R"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="GitHub"
-                title="GitHub"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-slate-700 transition-colors hover:border-teal-600 hover:text-teal-700"
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
-                  <path d="M12 .5C5.65.5.5 5.66.5 12.03c0 5.1 3.29 9.42 7.86 10.95.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.55-3.88-1.55-.52-1.34-1.28-1.7-1.28-1.7-1.04-.72.08-.71.08-.71 1.15.08 1.75 1.19 1.75 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.74.4-1.25.73-1.53-2.55-.29-5.23-1.28-5.23-5.68 0-1.25.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.14 1.18a10.9 10.9 0 0 1 5.72 0c2.18-1.49 3.14-1.18 3.14-1.18.62 1.58.23 2.75.11 3.04.74.8 1.18 1.83 1.18 3.08 0 4.41-2.69 5.39-5.25 5.68.41.36.78 1.07.78 2.16v3.21c0 .31.21.68.8.56A11.54 11.54 0 0 0 23.5 12.03C23.5 5.66 18.35.5 12 .5Z" />
-                </svg>
-                <span className="sr-only">GitHub</span>
-              </a>
-              <a
-                href="https://linkedin.com/in/souravchowdhury-2003r"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="LinkedIn"
-                title="LinkedIn"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-slate-700 transition-colors hover:border-teal-600 hover:text-teal-700"
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
-                  <path d="M4.98 3.5a2.5 2.5 0 1 0 0 5.01 2.5 2.5 0 0 0 0-5Zm-2 7h4v12h-4v-12ZM9.5 10.5h3.84v1.64h.05c.54-1.01 1.84-2.07 3.8-2.07 4.06 0 4.81 2.67 4.81 6.14v6.29h-4v-5.57c0-1.33-.02-3.05-1.86-3.05-1.87 0-2.16 1.46-2.16 2.95v5.67h-4v-12Z" />
-                </svg>
-                <span className="sr-only">LinkedIn</span>
-              </a>
-              <a
-                href="https://portfolio-topaz-eight-91.vercel.app"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Portfolio"
-                title="Portfolio"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-slate-700 transition-colors hover:border-teal-600 hover:text-teal-700"
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
-                  <path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2Zm7.93 9h-3.06a15.7 15.7 0 0 0-1.14-5.01A8.03 8.03 0 0 1 19.93 11Zm-7.93 9a13.55 13.55 0 0 1-2.09-7h4.18A13.55 13.55 0 0 1 12 20Zm0-9H9.91A13.55 13.55 0 0 1 12 4a13.55 13.55 0 0 1 2.09 7H12Zm-3.73-5.01A15.7 15.7 0 0 0 7.13 11H4.07a8.03 8.03 0 0 1 4.2-5.01ZM4.07 13h3.06a15.7 15.7 0 0 0 1.14 5.01A8.03 8.03 0 0 1 4.07 13Zm11.66 5.01A15.7 15.7 0 0 0 16.87 13h3.06a8.03 8.03 0 0 1-4.2 5.01Z" />
-                </svg>
-                <span className="sr-only">Portfolio</span>
-              </a>
+      <footer className="mt-10 border-t border-slate-200/80 bg-gradient-to-b from-white/90 via-white/80 to-slate-50/70 backdrop-blur-sm">
+        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-12 py-6 sm:py-8">
+          <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-sm shadow-slate-200/60 sm:p-6 lg:p-8">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-3">
+                <Link to="/" className="inline-flex items-center gap-2" aria-label="Go to PollRoom home">
+                  <img
+                    src="/favicon.ico"
+                    alt="PollRoom logo"
+                    className="h-9 w-9 rounded-xl object-cover shadow-sm"
+                  />
+                  <span className="display-font text-2xl font-bold tracking-tight text-slate-900">PollRoom</span>
+                </Link>
+                <p className="max-w-xl text-sm text-slate-600">
+                  Real-time polling made simple. Create, share, and track live responses instantly.
+                </p>
+              </div>
+
+              <div className="flex flex-col items-start gap-3 sm:items-end">
+                <p className="text-sm text-slate-600">
+                  Developed by{" "}
+                  <a
+                    href="https://github.com/sourav81R"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-semibold text-teal-700 hover:text-teal-800 underline underline-offset-2"
+                  >
+                    Sourav Chowdhury
+                  </a>
+                </p>
+                <div className="flex items-center gap-2">
+                  <a
+                    href="https://github.com/sourav81R"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="GitHub"
+                    title="GitHub"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300/90 bg-white/80 text-slate-700 transition-all hover:-translate-y-0.5 hover:border-teal-600 hover:text-teal-700"
+                  >
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+                      <path d="M12 .5C5.65.5.5 5.66.5 12.03c0 5.1 3.29 9.42 7.86 10.95.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.55-3.88-1.55-.52-1.34-1.28-1.7-1.28-1.7-1.04-.72.08-.71.08-.71 1.15.08 1.75 1.19 1.75 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.74.4-1.25.73-1.53-2.55-.29-5.23-1.28-5.23-5.68 0-1.25.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.14 1.18a10.9 10.9 0 0 1 5.72 0c2.18-1.49 3.14-1.18 3.14-1.18.62 1.58.23 2.75.11 3.04.74.8 1.18 1.83 1.18 3.08 0 4.41-2.69 5.39-5.25 5.68.41.36.78 1.07.78 2.16v3.21c0 .31.21.68.8.56A11.54 11.54 0 0 0 23.5 12.03C23.5 5.66 18.35.5 12 .5Z" />
+                    </svg>
+                    <span className="sr-only">GitHub</span>
+                  </a>
+                  <a
+                    href="https://linkedin.com/in/souravchowdhury-2003r"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="LinkedIn"
+                    title="LinkedIn"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300/90 bg-white/80 text-slate-700 transition-all hover:-translate-y-0.5 hover:border-teal-600 hover:text-teal-700"
+                  >
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+                      <path d="M4.98 3.5a2.5 2.5 0 1 0 0 5.01 2.5 2.5 0 0 0 0-5Zm-2 7h4v12h-4v-12ZM9.5 10.5h3.84v1.64h.05c.54-1.01 1.84-2.07 3.8-2.07 4.06 0 4.81 2.67 4.81 6.14v6.29h-4v-5.57c0-1.33-.02-3.05-1.86-3.05-1.87 0-2.16 1.46-2.16 2.95v5.67h-4v-12Z" />
+                    </svg>
+                    <span className="sr-only">LinkedIn</span>
+                  </a>
+                  <a
+                    href="https://portfolio-topaz-eight-91.vercel.app"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Portfolio"
+                    title="Portfolio"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300/90 bg-white/80 text-slate-700 transition-all hover:-translate-y-0.5 hover:border-teal-600 hover:text-teal-700"
+                  >
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+                      <path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2Zm7.93 9h-3.06a15.7 15.7 0 0 0-1.14-5.01A8.03 8.03 0 0 1 19.93 11Zm-7.93 9a13.55 13.55 0 0 1-2.09-7h4.18A13.55 13.55 0 0 1 12 20Zm0-9H9.91A13.55 13.55 0 0 1 12 4a13.55 13.55 0 0 1 2.09 7H12Zm-3.73-5.01A15.7 15.7 0 0 0 7.13 11H4.07a8.03 8.03 0 0 1 4.2-5.01ZM4.07 13h3.06a15.7 15.7 0 0 0 1.14 5.01A8.03 8.03 0 0 1 4.07 13Zm11.66 5.01A15.7 15.7 0 0 0 16.87 13h3.06a8.03 8.03 0 0 1-4.2 5.01Z" />
+                    </svg>
+                    <span className="sr-only">Portfolio</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 border-t border-slate-200/80 pt-4">
+              <p className="text-xs sm:text-sm text-slate-500">
+                Copyright &copy; {currentYear} PollRoom. All rights reserved.
+              </p>
             </div>
           </div>
         </div>
