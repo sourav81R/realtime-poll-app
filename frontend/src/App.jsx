@@ -257,44 +257,44 @@ function Layout({ children, user, onLogout }) {
       <main className="flex-grow rise-in">{children}</main>
       {selectedFooterProduct && (
         <section className="w-full px-4 sm:px-6 lg:px-10 xl:px-12 pt-3">
-          <div className="rounded-2xl border border-teal-200/80 bg-white/80 px-4 py-3 shadow-sm backdrop-blur-sm sm:px-5">
+          <div className="rounded-xl border border-teal-200/80 bg-white/80 px-3 py-2.5 shadow-sm backdrop-blur-sm sm:px-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-teal-700">
               Product Feature
             </p>
-            <h3 className="display-font mt-1 text-lg font-bold text-slate-900">
+            <h3 className="display-font mt-1 text-base font-bold text-slate-900">
               {selectedFooterProduct.label}
             </h3>
-            <p className="mt-1 text-sm text-slate-700">
+            <p className="mt-1 text-xs text-slate-700">
               {selectedFooterProduct.description}
             </p>
           </div>
         </section>
       )}
       <footer className="mt-10 bg-[#04244d] text-slate-100">
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-7 sm:py-9">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-5 xl:gap-7">
-            <div className="space-y-3">
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 xl:px-10 py-5 sm:py-6">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5 xl:gap-5">
+            <div className="space-y-2.5">
               <Link to="/" className="inline-flex items-center gap-2" aria-label="Go to PollRoom home">
                 <img
                   src="/favicon.ico"
                   alt="PollRoom logo"
-                  className="h-8 w-8 rounded-lg object-cover ring-1 ring-cyan-300/30"
+                  className="h-7 w-7 rounded-md object-cover ring-1 ring-cyan-300/30"
                 />
-                <span className="display-font text-2xl font-bold tracking-tight text-white">PollRoom</span>
+                <span className="display-font text-xl font-bold tracking-tight text-white">PollRoom</span>
               </Link>
-              <p className="max-w-xs text-sm text-slate-300">
+              <p className="max-w-xs text-xs text-slate-300">
                 Launch interactive polls in seconds and watch live results update in real time.
               </p>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
                 <a
                   href="https://github.com/sourav81R"
                   target="_blank"
                   rel="noreferrer"
                   aria-label="GitHub"
                   title="GitHub"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-cyan-200/25 text-slate-200 transition-colors hover:border-cyan-300 hover:text-cyan-200"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-cyan-200/25 text-slate-200 transition-colors hover:border-cyan-300 hover:text-cyan-200"
                 >
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden="true">
                     <path d="M12 .5C5.65.5.5 5.66.5 12.03c0 5.1 3.29 9.42 7.86 10.95.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.55-3.88-1.55-.52-1.34-1.28-1.7-1.28-1.7-1.04-.72.08-.71.08-.71 1.15.08 1.75 1.19 1.75 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.74.4-1.25.73-1.53-2.55-.29-5.23-1.28-5.23-5.68 0-1.25.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.14 1.18a10.9 10.9 0 0 1 5.72 0c2.18-1.49 3.14-1.18 3.14-1.18.62 1.58.23 2.75.11 3.04.74.8 1.18 1.83 1.18 3.08 0 4.41-2.69 5.39-5.25 5.68.41.36.78 1.07.78 2.16v3.21c0 .31.21.68.8.56A11.54 11.54 0 0 0 23.5 12.03C23.5 5.66 18.35.5 12 .5Z" />
                   </svg>
                   <span className="sr-only">GitHub</span>
@@ -305,9 +305,9 @@ function Layout({ children, user, onLogout }) {
                   rel="noreferrer"
                   aria-label="LinkedIn"
                   title="LinkedIn"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-cyan-200/25 text-slate-200 transition-colors hover:border-cyan-300 hover:text-cyan-200"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-cyan-200/25 text-slate-200 transition-colors hover:border-cyan-300 hover:text-cyan-200"
                 >
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden="true">
                     <path d="M4.98 3.5a2.5 2.5 0 1 0 0 5.01 2.5 2.5 0 0 0 0-5Zm-2 7h4v12h-4v-12ZM9.5 10.5h3.84v1.64h.05c.54-1.01 1.84-2.07 3.8-2.07 4.06 0 4.81 2.67 4.81 6.14v6.29h-4v-5.57c0-1.33-.02-3.05-1.86-3.05-1.87 0-2.16 1.46-2.16 2.95v5.67h-4v-12Z" />
                   </svg>
                   <span className="sr-only">LinkedIn</span>
@@ -318,9 +318,9 @@ function Layout({ children, user, onLogout }) {
                   rel="noreferrer"
                   aria-label="Portfolio"
                   title="Portfolio"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-cyan-200/25 text-slate-200 transition-colors hover:border-cyan-300 hover:text-cyan-200"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-cyan-200/25 text-slate-200 transition-colors hover:border-cyan-300 hover:text-cyan-200"
                 >
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden="true">
                     <path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2Zm7.93 9h-3.06a15.7 15.7 0 0 0-1.14-5.01A8.03 8.03 0 0 1 19.93 11Zm-7.93 9a13.55 13.55 0 0 1-2.09-7h4.18A13.55 13.55 0 0 1 12 20Zm0-9H9.91A13.55 13.55 0 0 1 12 4a13.55 13.55 0 0 1 2.09 7H12Zm-3.73-5.01A15.7 15.7 0 0 0 7.13 11H4.07a8.03 8.03 0 0 1 4.2-5.01ZM4.07 13h3.06a15.7 15.7 0 0 0 1.14 5.01A8.03 8.03 0 0 1 4.07 13Zm11.66 5.01A15.7 15.7 0 0 0 16.87 13h3.06a8.03 8.03 0 0 1-4.2 5.01Z" />
                   </svg>
                   <span className="sr-only">Portfolio</span>
@@ -329,8 +329,8 @@ function Layout({ children, user, onLogout }) {
             </div>
 
             <div>
-              <h3 className="display-font text-2xl font-bold text-white">Quick Links</h3>
-              <ul className="mt-3 space-y-2.5 text-base text-slate-200">
+              <h3 className="display-font text-xl font-bold text-white">Quick Links</h3>
+              <ul className="mt-2 space-y-1.5 text-sm text-slate-200">
                 <li>
                   <Link to="/" className="hover:text-cyan-200 transition-colors">Home</Link>
                 </li>
@@ -347,8 +347,8 @@ function Layout({ children, user, onLogout }) {
             </div>
 
             <div>
-              <h3 className="display-font text-2xl font-bold text-white">Product</h3>
-              <ul className="mt-3 space-y-2 text-base text-slate-200">
+              <h3 className="display-font text-xl font-bold text-white">Product</h3>
+              <ul className="mt-2 space-y-1.5 text-sm text-slate-200">
                 {footerProductItems.map((item) => {
                   const isActive = activeFooterProduct === item.label;
                   return (
@@ -361,7 +361,7 @@ function Layout({ children, user, onLogout }) {
                           )
                         }
                         aria-pressed={isActive}
-                        className={`w-full px-0.5 py-1 text-left transition-colors ${
+                        className={`w-full px-0.5 py-0.5 text-left transition-colors ${
                           isActive
                             ? "font-semibold text-cyan-200"
                             : "text-slate-200 hover:text-cyan-100"
@@ -376,23 +376,23 @@ function Layout({ children, user, onLogout }) {
             </div>
 
             <div>
-              <h3 className="display-font text-2xl font-bold text-white">Contact Us</h3>
-              <ul className="mt-3 space-y-3 text-base text-slate-200">
-                <li className="flex items-start gap-3">
-                  <svg viewBox="0 0 24 24" fill="none" className="mt-0.5 h-4 w-4 text-cyan-300" aria-hidden="true">
+              <h3 className="display-font text-xl font-bold text-white">Contact Us</h3>
+              <ul className="mt-2 space-y-2 text-sm text-slate-200">
+                <li className="flex items-start gap-2">
+                  <svg viewBox="0 0 24 24" fill="none" className="mt-0.5 h-3.5 w-3.5 text-cyan-300" aria-hidden="true">
                     <path d="M12 21s7-5.69 7-11a7 7 0 1 0-14 0c0 5.31 7 11 7 11Z" stroke="currentColor" strokeWidth="1.8" />
                     <circle cx="12" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.8" />
                   </svg>
                   <span>Remote-First, India</span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <svg viewBox="0 0 24 24" fill="none" className="mt-0.5 h-4 w-4 text-cyan-300" aria-hidden="true">
+                <li className="flex items-start gap-2">
+                  <svg viewBox="0 0 24 24" fill="none" className="mt-0.5 h-3.5 w-3.5 text-cyan-300" aria-hidden="true">
                     <path d="M5 4h3l2 5-2 1.5A14 14 0 0 0 13.5 16l1.5-2 5 2v3a2 2 0 0 1-2.18 2A15 15 0 0 1 3 6.18 2 2 0 0 1 5 4Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   <span>Maintained by Sourav Chowdhury</span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <svg viewBox="0 0 24 24" fill="none" className="mt-0.5 h-4 w-4 text-cyan-300" aria-hidden="true">
+                <li className="flex items-start gap-2">
+                  <svg viewBox="0 0 24 24" fill="none" className="mt-0.5 h-3.5 w-3.5 text-cyan-300" aria-hidden="true">
                     <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" />
                     <path d="m4 8 8 6 8-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -409,30 +409,30 @@ function Layout({ children, user, onLogout }) {
             </div>
 
             <div>
-              <h3 className="display-font text-2xl font-bold text-white">Get Started</h3>
-              <div className="mt-3 space-y-2.5">
+              <h3 className="display-font text-xl font-bold text-white">Get Started</h3>
+              <div className="mt-2 space-y-2">
                 <Link
                   to="/create"
-                  className="flex items-center justify-between rounded-xl border border-cyan-200/25 px-3 py-2.5 transition-colors hover:border-cyan-300"
+                  className="flex items-center justify-between rounded-lg border border-cyan-200/25 px-2.5 py-2 transition-colors hover:border-cyan-300"
                 >
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-300">Start Poll</p>
-                    <p className="text-xl font-bold text-white leading-tight">Create Poll</p>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-cyan-300">Start Poll</p>
+                    <p className="text-lg font-bold text-white leading-tight">Create Poll</p>
                   </div>
-                  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-cyan-300" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 text-cyan-300" aria-hidden="true">
                     <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </Link>
 
                 <Link
                   to={profilePath}
-                  className="flex items-center justify-between rounded-xl border border-cyan-200/25 px-3 py-2.5 transition-colors hover:border-cyan-300"
+                  className="flex items-center justify-between rounded-lg border border-cyan-200/25 px-2.5 py-2 transition-colors hover:border-cyan-300"
                 >
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-300">Track Votes</p>
-                    <p className="text-xl font-bold text-white leading-tight">Open Dashboard</p>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-cyan-300">Track Votes</p>
+                    <p className="text-lg font-bold text-white leading-tight">Open Dashboard</p>
                   </div>
-                  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-cyan-300" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 text-cyan-300" aria-hidden="true">
                     <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </Link>
@@ -440,8 +440,8 @@ function Layout({ children, user, onLogout }) {
             </div>
           </div>
 
-          <div className="mt-7 border-t border-cyan-100/15 pt-4 text-center">
-            <p className="text-xs sm:text-sm text-slate-300">
+          <div className="mt-5 border-t border-cyan-100/15 pt-3 text-center">
+            <p className="text-xs text-slate-300">
               (c) {currentYear} PollRoom. All rights reserved.
             </p>
           </div>
