@@ -1,4 +1,5 @@
 import { buildBackendUrl } from "../socket";
+import { beginGlobalLoading } from "../loading/loadingStore";
 
 const WARM_UP_TIMEOUT_MS = 45000;
 
@@ -29,10 +30,20 @@ export const startGoogleOAuth = async () => {
   const warmupUrl = buildBackendUrl("/");
   const oauthUrl = buildBackendUrl("/api/auth/google");
 
-  const response = await fetchWithTimeout(warmupUrl, WARM_UP_TIMEOUT_MS);
-  if (response.type !== "opaque" && !response.ok) {
-    throw new Error("Unable to connect to server. Please try again.");
-  }
+  const endLoading = beginGlobalLoading({
+    type: "network",
+    message: "Connecting to Google sign-in...",
+    minDuration: 350,
+  });
 
-  window.location.assign(oauthUrl);
+  try {
+    const response = await fetchWithTimeout(warmupUrl, WARM_UP_TIMEOUT_MS);
+    if (response.type !== "opaque" && !response.ok) {
+      throw new Error("Unable to connect to server. Please try again.");
+    }
+
+    window.location.assign(oauthUrl);
+  } finally {
+    endLoading();
+  }
 };

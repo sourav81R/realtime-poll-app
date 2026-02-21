@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/http";
 import { buildVoterHeaders } from "../utils/voterIdentity";
 import EditPollModal from "../components/EditPollModal";
+import { triggerLoadingPulse } from "../loading/loadingStore";
 
 function buildNameFromUsername(username) {
   if (!username) return "User";
@@ -364,7 +365,12 @@ export default function Profile({ user, onLogout }) {
         <section className="glass-panel card-lift rounded-2xl p-4">
           <div className="flex gap-2">
             <button
-              onClick={() => setMobileTab("created")}
+              onClick={() => {
+                if (mobileTab !== "created") {
+                  triggerLoadingPulse("Switching tab...", 320);
+                }
+                setMobileTab("created");
+              }}
               className={`flex-1 rounded-xl py-2 text-sm font-semibold ${
                 mobileTab === "created"
                   ? "bg-teal-700 text-white"
@@ -374,7 +380,12 @@ export default function Profile({ user, onLogout }) {
               Created Polls
             </button>
             <button
-              onClick={() => setMobileTab("voted")}
+              onClick={() => {
+                if (mobileTab !== "voted") {
+                  triggerLoadingPulse("Switching tab...", 320);
+                }
+                setMobileTab("voted");
+              }}
               className={`flex-1 rounded-xl py-2 text-sm font-semibold ${
                 mobileTab === "voted"
                   ? "bg-teal-700 text-white"

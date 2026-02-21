@@ -4,6 +4,7 @@ import { apiFetch } from "../api/http";
 import { isBackendConfigured, socket } from "../socket";
 import { buildVoterHeaders } from "../utils/voterIdentity";
 import EditPollModal from "../components/EditPollModal";
+import { triggerLoadingPulse } from "../loading/loadingStore";
 
 export default function PollRoom() {
   const { id: pollId } = useParams();
@@ -288,7 +289,12 @@ export default function PollRoom() {
 
         <div className="flex space-x-1 rounded-xl bg-white/80 border border-slate-200 p-1 mb-6">
           <button
-            onClick={() => setActiveTab("vote")}
+            onClick={() => {
+              if (activeTab !== "vote") {
+                triggerLoadingPulse("Switching tab...", 320);
+              }
+              setActiveTab("vote");
+            }}
             className={`w-full rounded-lg py-2.5 text-sm font-semibold transition-all ${
               activeTab === "vote"
                 ? "bg-teal-700 text-white shadow"
@@ -298,7 +304,12 @@ export default function PollRoom() {
             Vote
           </button>
           <button
-            onClick={() => setActiveTab("results")}
+            onClick={() => {
+              if (activeTab !== "results") {
+                triggerLoadingPulse("Switching tab...", 320);
+              }
+              setActiveTab("results");
+            }}
             className={`w-full rounded-lg py-2.5 text-sm font-semibold transition-all ${
               activeTab === "results"
                 ? "bg-teal-700 text-white shadow"

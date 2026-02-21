@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, NavLink, useLocation } from "react-router-dom";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Home from "./pages/Home";
 import CreatePoll from "./pages/CreatePoll";
 import PollRoom from "./pages/PollRoom";
@@ -7,6 +7,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import { getRoleFromToken } from "./utils/authToken";
+import GlobalLoadingOverlay from "./components/GlobalLoadingOverlay";
+import { triggerLoadingPulse } from "./loading/loadingStore";
 
 function buildNameFromUsername(username) {
   if (!username) return "User";
@@ -67,6 +69,7 @@ const footerProductItems = [
 
 function Layout({ children, user, onLogout }) {
   const location = useLocation();
+  const lastPathRef = useRef(location.pathname);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeFooterProduct, setActiveFooterProduct] = useState(null);
   const profilePath = user ? "/profile" : "/login";
@@ -79,6 +82,12 @@ function Layout({ children, user, onLogout }) {
   useEffect(() => {
     const timeoutId = setTimeout(() => setMobileMenuOpen(false), 0);
     return () => clearTimeout(timeoutId);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (lastPathRef.current === location.pathname) return;
+    lastPathRef.current = location.pathname;
+    triggerLoadingPulse("Opening page...", 460);
   }, [location.pathname]);
 
   const handleLogoutFromMenu = () => {
@@ -470,23 +479,30 @@ function App() {
     return null;
   });
 
-  const logout = () => {
+  const handleLogin = useCallback((nextUser) => {
+    triggerLoadingPulse("Signing you in...", 650);
+    setUser(nextUser);
+  }, []);
+
+  const logout = useCallback(() => {
+    triggerLoadingPulse("Signing you out...", 650);
     localStorage.removeItem("token");
     localStorage.removeItem("username");
     localStorage.removeItem("name");
     localStorage.removeItem("role");
     setUser(null);
-  };
+  }, []);
 
   return (
     <BrowserRouter>
+      <GlobalLoadingOverlay />
       <Layout user={user} onLogout={logout}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/create" element={<CreatePoll />} />
           <Route path="/poll/:id" element={<PollRoom />} />
-          <Route path="/login" element={<Login onLogin={setUser} />} />
-          <Route path="/register" element={<Register onLogin={setUser} />} />
+          <Route path="/login" element={<Login onLogin={handleLogin} />} />
+          <Route path="/register" element={<Register onLogin={handleLogin} />} />
           <Route path="/profile" element={<Profile user={user} onLogout={logout} />} />
         </Routes>
       </Layout>

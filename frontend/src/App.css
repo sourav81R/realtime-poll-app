@@ -156,6 +156,84 @@ svg {
   animation: riseIn 360ms ease both;
 }
 
+.global-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(13, 148, 136, 0.2), transparent 48%),
+    radial-gradient(circle at 85% 85%, rgba(234, 88, 12, 0.18), transparent 50%),
+    rgba(2, 6, 23, 0.38);
+  backdrop-filter: blur(5px);
+}
+
+.global-loading-card {
+  min-width: min(88vw, 340px);
+  border-radius: 1.35rem;
+  padding: 1.5rem 1.35rem;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(145deg, rgba(7, 26, 46, 0.94), rgba(13, 68, 88, 0.92));
+  border: 1px solid rgba(164, 230, 243, 0.34);
+  box-shadow:
+    0 18px 45px rgba(2, 12, 27, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.global-loader {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 0.85rem;
+}
+
+.global-loader-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+}
+
+.global-loader-ring-a {
+  border-top-color: rgba(255, 255, 255, 0.88);
+  border-right-color: rgba(34, 211, 238, 0.9);
+  animation: loadingSpin 1.15s linear infinite;
+}
+
+.global-loader-ring-b {
+  inset: 9px;
+  border-bottom-color: rgba(251, 191, 36, 0.9);
+  border-left-color: rgba(45, 212, 191, 0.86);
+  animation: loadingSpinReverse 1.45s linear infinite;
+}
+
+.global-loader-core {
+  position: absolute;
+  inset: 24px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, #f0fdfa 0%, #34d399 70%, #0f766e 100%);
+  box-shadow: 0 0 22px rgba(52, 211, 153, 0.5);
+  animation: loadingPulse 1.4s ease-in-out infinite;
+}
+
+.global-loading-title {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.global-loading-subtitle {
+  margin: 0.4rem 0 0;
+  font-size: 0.82rem;
+  color: rgba(236, 253, 245, 0.88);
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -176,11 +254,44 @@ svg {
   }
 }
 
+@keyframes loadingSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loadingSpinReverse {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes loadingPulse {
+  0%,
+  100% {
+    transform: scale(0.86);
+    opacity: 0.88;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .card-lift,
   .rise-in,
   .btn-accent,
-  .btn-soft {
+  .btn-soft,
+  .global-loader-ring-a,
+  .global-loader-ring-b,
+  .global-loader-core {
     animation: none;
     transition: none;
   }
@@ -218,6 +329,19 @@ svg {
 }
 
 @media (max-width: 640px) {
+  .global-loading-card {
+    padding: 1.25rem 1.1rem;
+  }
+
+  .global-loader {
+    width: 62px;
+    height: 62px;
+  }
+
+  .global-loading-title {
+    font-size: 1rem;
+  }
+
   .ambient-orb {
     opacity: 0.28;
   }

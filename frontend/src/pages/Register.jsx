@@ -103,7 +103,7 @@ export default function Register({ onLogin }) {
 
       const goToCreate =
         sessionStorage.getItem(PENDING_POLL_SHOULD_LAUNCH_KEY) === "1";
-      navigate(goToCreate ? "/create" : "/");
+      navigate(goToCreate ? "/create" : "/profile");
     } catch (err) {
       setError(
         err.message === "Failed to fetch"

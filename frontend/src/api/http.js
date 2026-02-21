@@ -3,6 +3,7 @@ import {
   buildBackendUrl,
   isBackendConfigured,
 } from "../socket";
+import { beginGlobalLoading } from "../loading/loadingStore";
 
 const isJsonResponse = (response) => {
   const contentType = response.headers.get("content-type") || "";
@@ -43,16 +44,26 @@ export const apiFetch = async (path, options = {}) => {
     throw new Error(BACKEND_CONFIG_ERROR);
   }
 
-  const response = await fetch(buildBackendUrl(path), options);
-  const body = await parseResponseBody(response);
+  const endLoading = beginGlobalLoading({
+    type: "network",
+    message: "Syncing with server...",
+    minDuration: 300,
+  });
 
-  if (!response.ok) {
-    throw new Error(normalizeErrorMessage(response, body));
+  try {
+    const response = await fetch(buildBackendUrl(path), options);
+    const body = await parseResponseBody(response);
+
+    if (!response.ok) {
+      throw new Error(normalizeErrorMessage(response, body));
+    }
+
+    if (Object.prototype.hasOwnProperty.call(body, "__rawText")) {
+      throw new Error("Expected JSON response but received non-JSON from backend.");
+    }
+
+    return body;
+  } finally {
+    endLoading();
   }
-
-  if (Object.prototype.hasOwnProperty.call(body, "__rawText")) {
-    throw new Error("Expected JSON response but received non-JSON from backend.");
-  }
-
-  return body;
 };
