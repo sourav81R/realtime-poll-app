@@ -90,24 +90,24 @@ function Layout({ children, user, onLogout }) {
     <div className="app-shell min-h-screen flex flex-col text-slate-900">
       <div className="ambient-orb ambient-orb-a" />
       <div className="ambient-orb ambient-orb-b" />
-      <div className="sticky top-0 z-50 w-full pt-3">
+      <div className="sticky top-0 z-50 w-full pt-2 sm:pt-3">
         <div className="mx-auto w-full max-w-6xl px-3 sm:px-4 lg:px-6">
-        <nav className="rounded-[24px] border border-cyan-100/20 bg-gradient-to-r from-[#213b5f] via-[#25476f] to-[#3a9ba4] shadow-[0_14px_30px_rgba(3,16,37,0.28)] backdrop-blur-md">
-          <div className="hidden md:flex h-16 items-center justify-between px-5 lg:px-7">
+        <nav className="rounded-[20px] sm:rounded-[24px] border border-cyan-100/20 bg-gradient-to-r from-[#213b5f] via-[#25476f] to-[#3a9ba4] shadow-[0_10px_22px_rgba(3,16,37,0.24)] sm:shadow-[0_14px_30px_rgba(3,16,37,0.28)] backdrop-blur-md">
+          <div className="hidden md:flex h-14 lg:h-16 items-center justify-between px-4 lg:px-7">
             <Link
               to="/"
-              className="inline-flex items-center gap-2 rounded-full border border-cyan-100/20 bg-[#122f52]/70 px-4 py-2"
+              className="inline-flex items-center gap-2 rounded-full border border-cyan-100/20 bg-[#122f52]/70 px-3 lg:px-4 py-1.5 lg:py-2"
               aria-label="Go to PollRoom home"
             >
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-cyan-300/20 text-cyan-200">
-                <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+              <span className="inline-flex h-5 w-5 lg:h-6 lg:w-6 items-center justify-center rounded-full bg-cyan-300/20 text-cyan-200">
+                <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5 lg:h-4 lg:w-4" aria-hidden="true">
                   <path d="M12 4v16M4 12h16M6.5 6.5l11 11M17.5 6.5l-11 11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
                 </svg>
               </span>
-              <span className="display-font text-3xl font-bold tracking-tight text-white">PollRoom</span>
+              <span className="display-font text-2xl lg:text-3xl font-bold tracking-tight text-white">PollRoom</span>
             </Link>
 
-            <div className="flex items-center gap-7 lg:gap-10">
+            <div className="flex items-center gap-5 lg:gap-8">
               <NavLink to={profilePath} className={({ isActive }) => navLinkClass(isActive)}>
                 Dashboard
               </NavLink>
@@ -117,14 +117,14 @@ function Layout({ children, user, onLogout }) {
               {user ? (
                 <button
                   onClick={onLogout}
-                  className="rounded-full bg-cyan-300 px-6 py-2 text-[1.05rem] font-semibold text-slate-950 transition-colors hover:bg-cyan-200"
+                  className="rounded-full bg-cyan-300 px-4 lg:px-6 py-1.5 lg:py-2 text-sm lg:text-[1.05rem] font-semibold text-slate-950 transition-colors hover:bg-cyan-200"
                 >
                   Logout
                 </button>
               ) : (
                 <Link
                   to="/login"
-                  className="rounded-full bg-cyan-300 px-6 py-2 text-[1.05rem] font-semibold text-slate-950 transition-colors hover:bg-cyan-200"
+                  className="rounded-full bg-cyan-300 px-4 lg:px-6 py-1.5 lg:py-2 text-sm lg:text-[1.05rem] font-semibold text-slate-950 transition-colors hover:bg-cyan-200"
                 >
                   Login
                 </Link>
@@ -132,7 +132,7 @@ function Layout({ children, user, onLogout }) {
             </div>
           </div>
 
-          <div className="md:hidden px-3 py-3">
+          <div className="md:hidden px-3 py-2.5">
             <div className="flex items-center justify-between gap-2">
               <Link
                 to="/"
@@ -143,19 +143,19 @@ function Layout({ children, user, onLogout }) {
                     <path d="M12 4v16M4 12h16M6.5 6.5l11 11M17.5 6.5l-11 11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
                   </svg>
                 </span>
-                <span className="display-font text-lg font-bold tracking-tight text-white">PollRoom</span>
+                  <span className="display-font text-base font-bold tracking-tight text-white">PollRoom</span>
               </Link>
 
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen((prev) => !prev)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-cyan-100/25 bg-[#122f52]/70 text-white"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-100/25 bg-[#122f52]/70 text-white"
                 aria-label="Toggle menu"
                 aria-expanded={mobileMenuOpen}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
+                  className="h-4 w-4"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -178,7 +178,7 @@ function Layout({ children, user, onLogout }) {
             onClick={() => setMobileMenuOpen(false)}
             aria-label="Close menu backdrop"
           />
-          <div className="absolute top-[78px] left-3 right-3 rounded-2xl border border-cyan-100/20 bg-[#173659] text-slate-100 shadow-xl p-4">
+          <div className="absolute top-[72px] left-3 right-3 rounded-2xl border border-cyan-100/20 bg-[#173659] text-slate-100 shadow-xl p-4">
             {user ? (
               <Link
                 to={profilePath}
@@ -256,7 +256,8 @@ function Layout({ children, user, onLogout }) {
 
       <main className="flex-grow rise-in">{children}</main>
       {selectedFooterProduct && (
-        <section className="w-full px-4 sm:px-6 lg:px-10 xl:px-12 pt-3">
+        <section className="w-full pt-2 sm:pt-3">
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 xl:px-10">
           <div className="rounded-xl border border-teal-200/80 bg-white/80 px-3 py-2.5 shadow-sm backdrop-blur-sm sm:px-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-teal-700">
               Product Feature
@@ -268,11 +269,12 @@ function Layout({ children, user, onLogout }) {
               {selectedFooterProduct.description}
             </p>
           </div>
+          </div>
         </section>
       )}
       <footer className="mt-10 bg-[#04244d] text-slate-100">
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 xl:px-10 py-5 sm:py-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5 xl:gap-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 xl:gap-5">
             <div className="space-y-2.5">
               <Link to="/" className="inline-flex items-center gap-2" aria-label="Go to PollRoom home">
                 <img

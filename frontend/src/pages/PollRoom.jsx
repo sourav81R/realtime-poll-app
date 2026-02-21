@@ -236,14 +236,14 @@ export default function PollRoom() {
   const hasVote = typeof currentUserVote === "number";
 
   return (
-    <div className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-14">
+    <div className="max-w-4xl mx-auto px-3 sm:px-4 py-7 sm:py-12">
       {toastMessage && (
         <div className="fixed top-16 sm:top-20 left-3 right-3 sm:left-auto sm:right-4 z-50 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 shadow-lg">
           {toastMessage}
         </div>
       )}
 
-      <div className="glass-panel rounded-2xl sm:rounded-3xl shadow-2xl border p-4 sm:p-10">
+      <div className="glass-panel card-lift rounded-2xl sm:rounded-3xl shadow-2xl border p-4 sm:p-8 lg:p-10">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8 border-b border-slate-200 pb-6">
           <h1 className="display-font text-xl sm:text-3xl font-bold text-slate-900 leading-tight break-words">
             {poll.question}

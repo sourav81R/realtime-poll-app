@@ -10,10 +10,19 @@
   --brand-main: #0f766e;
   --brand-alt: #0ea5a4;
   --accent: #ea580c;
+  --radius-soft: 1rem;
+  --radius-panel: 1.25rem;
+  --content-max: 72rem;
 }
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -21,6 +30,7 @@ body {
   min-height: 100vh;
   font-family: "Plus Jakarta Sans", sans-serif;
   color: var(--text-main);
+  line-height: 1.4;
   overflow-x: hidden;
   background:
     radial-gradient(1000px 500px at 0% -10%, rgba(20, 184, 166, 0.25), transparent 55%),
@@ -28,10 +38,27 @@ body {
     linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
 }
 
-html,
 #root {
   width: 100%;
   overflow-x: hidden;
+}
+
+a,
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+img,
+svg {
+  max-width: 100%;
 }
 
 .display-font {
@@ -78,7 +105,8 @@ html,
 .glass-panel {
   background: var(--panel-bg);
   border: 1px solid var(--line-soft);
-  box-shadow: 0 12px 40px rgba(2, 132, 199, 0.09);
+  border-radius: var(--radius-panel);
+  box-shadow: 0 12px 34px rgba(2, 132, 199, 0.1);
 }
 
 .card-lift {
@@ -101,20 +129,27 @@ html,
 .btn-accent {
   background: linear-gradient(135deg, var(--brand-main), var(--brand-alt));
   color: #fff;
+  box-shadow: 0 10px 20px rgba(13, 148, 136, 0.2);
+  transition: transform 140ms ease, filter 140ms ease, box-shadow 140ms ease;
 }
 
 .btn-accent:hover {
   filter: brightness(1.04);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(13, 148, 136, 0.28);
 }
 
 .btn-soft {
   border: 1px solid rgba(15, 118, 110, 0.2);
   background: rgba(255, 255, 255, 0.75);
   color: var(--brand-main);
+  transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease;
 }
 
 .btn-soft:hover {
   background: rgba(240, 253, 250, 0.9);
+  border-color: rgba(15, 118, 110, 0.3);
+  transform: translateY(-1px);
 }
 
 .rise-in {
@@ -143,7 +178,9 @@ html,
 
 @media (prefers-reduced-motion: reduce) {
   .card-lift,
-  .rise-in {
+  .rise-in,
+  .btn-accent,
+  .btn-soft {
     animation: none;
     transition: none;
   }
@@ -160,6 +197,23 @@ html,
     width: 280px;
     height: 280px;
     right: -90px;
+  }
+
+  .glass-panel {
+    box-shadow: 0 10px 26px rgba(2, 132, 199, 0.09);
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    background:
+      radial-gradient(640px 360px at 0% -10%, rgba(20, 184, 166, 0.24), transparent 55%),
+      radial-gradient(600px 320px at 100% 0%, rgba(234, 88, 12, 0.14), transparent 50%),
+      linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+  }
+
+  .glass-panel {
+    box-shadow: 0 8px 18px rgba(2, 132, 199, 0.08);
   }
 }
 
@@ -184,5 +238,10 @@ html,
 
   .glass-panel {
     border-radius: 1.1rem;
+  }
+
+  .btn-accent,
+  .btn-soft {
+    box-shadow: none;
   }
 }

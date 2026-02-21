@@ -148,8 +148,8 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-6 sm:mt-10 px-3 sm:px-0">
-      <div className="p-5 sm:p-8 glass-panel rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200">
+    <div className="max-w-md mx-auto mt-5 sm:mt-8 lg:mt-10 px-3 sm:px-0">
+      <div className="p-5 sm:p-7 lg:p-8 glass-panel card-lift rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200">
       <p className="text-xs uppercase tracking-[0.2em] text-teal-700 font-semibold text-center">
         Welcome Back
       </p>

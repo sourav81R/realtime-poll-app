@@ -121,8 +121,8 @@ export default function CreatePoll() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-3 sm:px-4 py-8 sm:py-14">
-      <div className="glass-panel rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
+    <div className="max-w-2xl mx-auto px-3 sm:px-4 py-7 sm:py-12">
+      <div className="glass-panel card-lift rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
         <div className="bg-gradient-to-r from-teal-700 to-cyan-600 px-4 sm:px-6 py-4 sm:py-5">
           <p className="text-xs uppercase tracking-[0.2em] text-cyan-100 font-semibold">
             New Session
@@ -132,7 +132,7 @@ export default function CreatePoll() {
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 sm:p-8 space-y-5 sm:space-y-6">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-7 lg:p-8 space-y-5 sm:space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 p-4 rounded-xl">
               <p className="text-sm text-red-700">{error}</p>

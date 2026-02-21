@@ -118,14 +118,14 @@ export default function Home() {
 
   return (
     <div className="relative overflow-hidden">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-6">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-6 sm:pt-10 lg:pt-12 pb-5">
         <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
-          <h2 className="display-font text-2xl sm:text-3xl font-bold text-slate-900">
+          <h2 className="display-font text-[1.55rem] sm:text-3xl font-bold text-slate-900">
             Poll Feed
           </h2>
           <button
             onClick={loadFeed}
-            className="btn-soft rounded-full px-4 py-2 text-xs sm:text-sm font-semibold"
+            className="btn-soft rounded-full px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold"
           >
             Refresh
           </button>
@@ -149,7 +149,7 @@ export default function Home() {
               return (
                 <article
                   key={poll._id}
-                  className="glass-panel rounded-2xl p-4 sm:p-5 border border-slate-200"
+                  className="glass-panel card-lift rounded-2xl p-4 sm:p-5 border border-slate-200"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="display-font text-lg sm:text-xl font-bold text-slate-900 leading-snug break-words">
@@ -234,11 +234,11 @@ export default function Home() {
         )}
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4 pb-12 sm:pb-16 text-center">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-2 sm:pt-4 pb-10 sm:pb-14 text-center">
         <span className="inline-flex items-center rounded-full border border-teal-200 bg-white/80 px-3 sm:px-4 py-1 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">
           Live Poll Toolkit
         </span>
-        <h1 className="display-font mt-5 sm:mt-6 text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
+        <h1 className="display-font mt-5 sm:mt-6 text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
           Build polls people
           <br className="hidden sm:block" />
           <span className="brand-gradient-text">want to interact with.</span>
@@ -250,7 +250,7 @@ export default function Home() {
         <div className="flex justify-center">
           <Link
             to="/create"
-            className="btn-accent inline-flex items-center justify-center rounded-full w-full sm:w-auto px-8 py-3 text-base font-semibold shadow-lg transition-transform hover:-translate-y-0.5"
+            className="btn-accent inline-flex items-center justify-center rounded-full w-full sm:w-auto px-7 sm:px-8 py-3 text-sm sm:text-base font-semibold shadow-lg transition-transform hover:-translate-y-0.5"
           >
             Create a Poll
           </Link>

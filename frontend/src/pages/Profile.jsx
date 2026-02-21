@@ -296,8 +296,8 @@ export default function Profile({ user, onLogout }) {
 
   if (!token) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-10">
-        <div className="glass-panel rounded-2xl p-6 sm:p-8 text-center">
+      <div className="max-w-3xl mx-auto px-4 py-8 sm:py-10">
+        <div className="glass-panel card-lift rounded-2xl p-6 sm:p-8 text-center">
           <h2 className="display-font text-2xl sm:text-3xl font-bold text-slate-900">Profile</h2>
           <p className="mt-3 text-slate-600">Please login or signup to access your profile.</p>
           <div className="mt-5 flex flex-col sm:flex-row gap-3 justify-center">
@@ -314,8 +314,8 @@ export default function Profile({ user, onLogout }) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-3 sm:px-6 py-6 sm:py-10 space-y-5">
-      <div className="glass-panel rounded-2xl p-4 sm:p-6">
+    <div className="max-w-6xl mx-auto px-3 sm:px-6 py-5 sm:py-9 space-y-4 sm:space-y-5">
+      <div className="glass-panel card-lift rounded-2xl p-4 sm:p-6">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-gradient-to-br from-teal-600 to-cyan-500 text-white text-lg font-bold flex items-center justify-center shrink-0">
@@ -335,7 +335,7 @@ export default function Profile({ user, onLogout }) {
       </div>
 
       <div className="md:hidden space-y-4">
-        <section className="glass-panel rounded-2xl p-4">
+        <section className="glass-panel card-lift rounded-2xl p-4">
           <div className="grid grid-cols-3 gap-2">
             <div className="bg-white/85 border border-slate-200 rounded-xl p-3 text-center">
               <p className="text-[11px] uppercase tracking-wide text-slate-500">Created</p>
@@ -361,7 +361,7 @@ export default function Profile({ user, onLogout }) {
           </div>
         </section>
 
-        <section className="glass-panel rounded-2xl p-4">
+        <section className="glass-panel card-lift rounded-2xl p-4">
           <div className="flex gap-2">
             <button
               onClick={() => setMobileTab("created")}
@@ -418,7 +418,7 @@ export default function Profile({ user, onLogout }) {
         </section>
 
         {isAdmin && (
-          <section className="glass-panel rounded-2xl p-4">
+          <section className="glass-panel card-lift rounded-2xl p-4">
             <div className="flex items-center justify-between gap-3">
               <h2 className="display-font text-lg font-bold text-slate-900">Admin Panel</h2>
               <button
@@ -455,7 +455,7 @@ export default function Profile({ user, onLogout }) {
 
       <div className="hidden md:grid grid-cols-12 gap-5">
         <aside className="col-span-4 xl:col-span-3 space-y-4">
-          <section className="glass-panel rounded-2xl p-4">
+          <section className="glass-panel card-lift rounded-2xl p-4">
             <h2 className="display-font text-xl font-bold text-slate-900">Dashboard</h2>
             <div className="mt-3 space-y-2">
               <div className="bg-white/85 border border-slate-200 rounded-xl p-3">
@@ -473,7 +473,7 @@ export default function Profile({ user, onLogout }) {
             </div>
           </section>
 
-          <section className="glass-panel rounded-2xl p-4">
+          <section className="glass-panel card-lift rounded-2xl p-4">
             <h3 className="text-sm font-semibold text-slate-700">Quick Actions</h3>
             <div className="mt-3 space-y-2">
               <Link to="/" className="btn-soft rounded-xl px-4 py-2 text-sm font-semibold text-center block">
@@ -487,7 +487,7 @@ export default function Profile({ user, onLogout }) {
         </aside>
 
         <div className="col-span-8 xl:col-span-9 grid grid-cols-1 xl:grid-cols-2 gap-5">
-          <section className="glass-panel rounded-2xl p-5">
+          <section className="glass-panel card-lift rounded-2xl p-5">
             <h2 className="display-font text-xl sm:text-2xl font-bold text-slate-900">
               Your Created Polls
             </h2>
@@ -518,7 +518,7 @@ export default function Profile({ user, onLogout }) {
           </section>
 
           {isAdmin ? (
-            <section className="glass-panel rounded-2xl p-5">
+            <section className="glass-panel card-lift rounded-2xl p-5">
               <div className="flex items-center justify-between gap-3">
                 <h2 className="display-font text-xl sm:text-2xl font-bold text-slate-900">
                   Admin Panel
@@ -553,7 +553,7 @@ export default function Profile({ user, onLogout }) {
               )}
             </section>
           ) : (
-            <section className="glass-panel rounded-2xl p-5">
+            <section className="glass-panel card-lift rounded-2xl p-5">
               <h2 className="display-font text-xl sm:text-2xl font-bold text-slate-900">
                 Polls You Voted
               </h2>
